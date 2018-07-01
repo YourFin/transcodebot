@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"github.com/yourfin/TranscodeBot/common"
 	"github.com/gorilla/websocket"
+	"io/ioutil"
+	"html/template"
 )
 
 var upgrader = websocket.Upgrader{
@@ -22,6 +24,18 @@ var upgrader = websocket.Upgrader{
 //	}
 //	if err := conn.WriteMessage()
 //}
+
+func rootHandler(ww http.ResponseWriter, rr *http.Request) {
+	files, err := ioutil.ReadDir("./clients/")
+	if err != nil {
+		log.Fatal("find files err: ", err)
+	}
+	tmpl, err := template.ParseFiles("root.html")
+	if err != nil {
+		log.Fatal("template err: ", err)
+	}
+		tmpl.Execute(ww, files)
+}
 
 func echo(ww http.ResponseWriter, rr *http.Request) {
 	conn, err := upgrader.Upgrade(ww, rr, nil)
@@ -48,6 +62,9 @@ func echo(ww http.ResponseWriter, rr *http.Request) {
 
 func main() {
 	fmt.Printf("%s\n", common.Computer{})
+	fs := http.FileServer(http.Dir("clients"))
+	http.Handle("/clients/", http.StripPrefix("/clients", fs))
 	http.HandleFunc("/ws", echo)
+	http.HandleFunc("/", rootHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
