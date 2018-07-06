@@ -29,14 +29,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-var settingsDir string
+var SettingsDir string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "TranscodeBot",
+	Use:   "transcodebot",
 	Short: "Cross-platform distributed ffmpeg-based transcoding pipeline",
 	Long: `TranscodeBot is designed to simplify distributing ffmpeg transcoding to the background of computers with other jobs, e.g. various home computers.
 This is the server CLI, which can be used to generate statically complied clients that work with extremely minimal setup, as well as serve and recieve files to transcode from clients.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(homedir.Expand(".local/transcodebot")))
+},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -48,24 +51,18 @@ func Execute() {
 	}
 }
 
+//
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&settingsDir, "settings-dir", "", "")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&SettingsDir, "settings-dir", "", "")
 }
 
-// initConfig reads in config file and ENV variables if set.
+// initConfig reads in config file
 func initConfig() {
-	if settingsDir != "" {
+	if SettingsDir != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(fmt.Sprintf("%s/config.yaml", settingsDir))
+		viper.SetConfigFile(fmt.Sprintf("%s/config.yaml", SettingsDir))
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
@@ -73,10 +70,11 @@ func initConfig() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+		fmt.Println(home)
 
 		// Search config in home directory with name ".TranscodeBot" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".TranscodeBot")
+		viper.SetConfigName("config.yaml")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
