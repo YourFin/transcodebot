@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"github.com/yourfin/TranscodeBot/common"
+	"github.com/yourfin/transcodebot/common"
 	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"html/template"

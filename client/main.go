@@ -26,7 +26,7 @@ import (
 	"os"
 	"time"
 	"os/signal"
-	//"github.com/yourfin/TranscodeBot/common"
+	//"github.com/yourfin/transcodebot/common"
 	"github.com/gorilla/websocket"
 )
 

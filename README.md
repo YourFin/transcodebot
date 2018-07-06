@@ -1,13 +1,13 @@
 # NOTE: This software is under construction and doesn't do much that this README says it does
-# TranscodeBot
-TranscodeBot is a "batteries included" system for distributing large video transcoding tasks to computers that have other jobs, like being workstations or browsing machines.
+# Transcodebot
+Transcodebot is a "batteries included" system for distributing large video transcoding tasks to computers that have other jobs, like being workstations or browsing machines.
 
 ### Quick setup
 [Install go](INSERT LINK)
-    go install github.com/yourfin/TranscodeBot
+    go install github.com/yourfin/transcodebot
 
 ## Design
-TranscodeBot is designed for client machines that have generally have something better to do.
+Transcodebot is designed for client machines that have generally have something better to do.
 
 ### Why go (and not java)?
  - Single binary client distribution:

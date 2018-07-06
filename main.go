@@ -20,7 +20,7 @@
 
 package main
 
-import "github.com/yourfin/TranscodeBot/cmd"
+import "github.com/yourfin/transcodebot/cmd"
 
 func main() {
 	cmd.Execute()

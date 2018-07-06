@@ -24,18 +24,19 @@ import (
 	"fmt"
 	"os"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/yourfin/transcodebot/common"
 )
 
 var SettingsDir string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "TranscodeBot",
+	Use:   "transcodebot",
 	Short: "Cross-platform distributed ffmpeg-based transcoding pipeline",
-	Long: `TranscodeBot is designed to simplify distributing ffmpeg transcoding to the background of computers with other jobs, e.g. various home computers.
+	Long: `Transcodebot is designed to simplify distributing ffmpeg transcoding to the background of computers with other jobs, e.g. various home computers.
 This is the server CLI, which can be used to generate statically complied clients that work with extremely minimal setup, as well as serve and recieve files to transcode from clients.`,
 }
 
