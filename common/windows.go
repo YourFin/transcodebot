@@ -22,10 +22,14 @@
 
 package common
 
-//import (
-//
-//)
+import (
+	"os"
+)
 
 func IsSuperUser() {
 	return false
+}
+
+func GetDefaultSettingsDir() string {
+	return os.Getenv("LocalAppData") + "\\transcodebot\\"
 }

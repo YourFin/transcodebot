@@ -23,10 +23,15 @@
 package common
 
 import (
+	"os"
 	"os/exec"
+	"log"
+	"fmt"
+
+	homedir "github.com/mitchellh/go-homedir"
 )
 
-func IsSuperUser() Bool {
+func IsSuperUser() bool {
 	out, err := exec.Command("id -u").Output()
 	if err != nil {
 		log.Fatal("running system id command err:", err)
@@ -34,8 +39,10 @@ func IsSuperUser() Bool {
 	return string(out[:]) == "0"
 }
 
-func GetDefaultConfigDir() String {
-	home, err := homedir.Expand("~/.local/usr/TranscodeBot")
+//Returns full path to the default settings directory location
+// ~/.local/share/transcodebot on unix's if
+func GetDefaultSettingsDir() string {
+	home, err := homedir.Expand("~/.local/share/transcodebot/")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

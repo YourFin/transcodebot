@@ -51,27 +51,16 @@ func Execute() {
 //
 func init() {
 	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringVar(&SettingsDir, "settings-dir", "", "")
 }
 
 // initConfig reads in config file
 func initConfig() {
-	if SettingsDir != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(fmt.Sprintf("%s/config.yaml", SettingsDir))
-	} else {
-		// Find home directory.
-		home, err := homedir.Expand("~/.local/usr/TranscodeBot")
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".TranscodeBot" (without extension).
-		viper.AddConfigPath()
-		viper.SetConfigName("config.yaml")
+	if SettingsDir == "" {
+		SettingsDir = common.GetDefaultSettingsDir()
 	}
+	viper.AddConfigPath(SettingsDir)
+	viper.SetConfigName("server-config.yaml")
 
 	viper.AutomaticEnv() // read in environment variables that match
 
