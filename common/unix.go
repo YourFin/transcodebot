@@ -26,10 +26,19 @@ import (
 	"os/exec"
 )
 
-func IsSuperUser() {
+func IsSuperUser() Bool {
 	out, err := exec.Command("id -u").Output()
 	if err != nil {
 		log.Fatal("running system id command err:", err)
 	}
 	return string(out[:]) == "0"
+}
+
+func GetDefaultConfigDir() String {
+	home, err := homedir.Expand("~/.local/usr/TranscodeBot")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return home
 }
