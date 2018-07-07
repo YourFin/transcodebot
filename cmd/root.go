@@ -49,7 +49,6 @@ func Execute() {
 	}
 }
 
-//
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&SettingsDir, "settings-dir", "", "")

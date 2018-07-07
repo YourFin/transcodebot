@@ -32,6 +32,9 @@ import (
 )
 
 func IsSuperUser() bool {
+	if forceSuperuser {
+		return true
+	}
 	out, err := exec.Command("id -u").Output()
 	if err != nil {
 		log.Fatal("running system id command err:", err)
@@ -42,10 +45,14 @@ func IsSuperUser() bool {
 //Returns full path to the default settings directory location
 // ~/.local/share/transcodebot on unix's if
 func GetDefaultSettingsDir() string {
-	home, err := homedir.Expand("~/.local/share/transcodebot/")
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	if IsSuperUser() {
+		return "/etc/transcodebot/"
+	} else {
+		home, err := homedir.Expand("~/.local/share/transcodebot/")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		return home
 	}
-	return home
 }

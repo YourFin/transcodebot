@@ -27,6 +27,9 @@ import (
 )
 
 func IsSuperUser() {
+	if forceSuperuser {
+		return true
+	}
 	return false
 }
 
