@@ -37,7 +37,7 @@ func IsSuperUser() bool {
 	if superuserForced {
 		return forceSuperuser
 	}
-	out, err := exec.Command("id -u").Output()
+	out, err := exec.Command("id", "-u").Output()
 	if err != nil {
 		log.Fatal("running system id command err:", err)
 	}

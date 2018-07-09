@@ -42,9 +42,9 @@ var rootCmd = &cobra.Command{
 	Short: "Cross-platform distributed ffmpeg-based transcoding pipeline",
 	Long: `Transcodebot is designed to simplify distributing ffmpeg transcoding to the background of computers with other jobs, e.g. various home computers.
 This is the server CLI, which can be used to generate statically complied clients that work with extremely minimal setup, as well as serve and recieve files to transcode from clients.`,
-	PersistentPreRun: func(_ *Command, _ []string) {
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		forceSuperuserInit()
-	}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

@@ -33,7 +33,7 @@ var (
 
 func ForceSuperuser(value bool) {
 	if superuserForced {
-		common.PrintError("Superuser forced twice")
+		PrintError("Superuser forced twice")
 	}
 	forceSuperuser = value
 	superuserForced = true
