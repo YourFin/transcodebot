@@ -24,8 +24,6 @@ package common
 
 import (
 	"os"
-	"os/exec"
-	"log"
 	"fmt"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -37,11 +35,7 @@ func IsSuperUser() bool {
 	if superuserForced {
 		return forceSuperuser
 	}
-	out, err := exec.Command("id", "-u").Output()
-	if err != nil {
-		log.Fatal("running system id command err:", err)
-	}
-	return string(out[:]) == "0"
+	return os.Getuid() == 0
 }
 
 //Returns full path to the default settings directory location
