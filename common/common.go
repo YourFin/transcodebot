@@ -47,3 +47,11 @@ func PrintError(in ...interface{}) {
 		os.Exit(1)
 	}
 }
+
+func Println(in ...interface{}) {
+	if IsSuperUser() {
+		log.Println(in...)
+	} else {
+		fmt.Println(in...)
+	}
+}

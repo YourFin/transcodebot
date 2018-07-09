@@ -21,7 +21,7 @@
 package build
 
 import (
-	"fmt"
+	"github.com/yourfin/transcodebot/common"
 )
 
 type BuildSettings struct {
@@ -31,8 +31,9 @@ type BuildSettings struct {
 }
 
 func Build(settings BuildSettings) error {
-	fmt.Println(settings.OutputLocation)
-	fmt.Println(settings.OutputPrefix)
-	fmt.Println(settings.NoCompress)
+	common.Println(settings.OutputLocation)
+	common.Println(settings.OutputPrefix)
+	common.Println(settings.NoCompress)
+
 	return nil
 }
