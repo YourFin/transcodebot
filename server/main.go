@@ -39,7 +39,7 @@ func rootHandler(ww http.ResponseWriter, rr *http.Request) {
 	if err != nil {
 		log.Fatal("find files err: ", err)
 	}
-	tmpl, err := template.ParseFiles("root.html")
+	tmpl, err := template.ParseFiles("index.html")
 	if err != nil {
 		log.Fatal("template err: ", err)
 	}
