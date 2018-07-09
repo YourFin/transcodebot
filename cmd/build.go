@@ -26,7 +26,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-
 	"github.com/yourfin/transcodebot/common"
 	"github.com/yourfin/transcodebot/build"
 )
@@ -40,25 +39,12 @@ var buildCmd = &cobra.Command{
 		var err error
 		if len(args) != 0 {
 			// TODO: Figure out how to call parent help function here
-			common.PrintError("build does not take any arguments")
+			common.PrintError("`transcodebot build` does not take any arguments")
 		}
 
-		if buildSettings.OutputLocation == "" {
-			if common.IsSuperUser() {
-				if common.Os == "windows" {
-					buildSettings.OutputLocation = filepath.Join(os.Getenv("ProgramData"), "transcodebot", "build")
-				} else {
-					// unix
-					buildSettings.OutputLocation = "/var/transcodebot/build"
-				}
-			} else {
-				// Not superuser
-				buildSettings.OutputLocation = filepath.Join(SettingsDir, "build", "")
-			}
-		}
+		buildSettings = finalizeBuildSettings(buildSettings)
 
-		err = build.Build(buildSettings)
-		if err != nil {
+		if err = build.Build(buildSettings); err != nil {
 			common.PrintError("build err:", err)
 		}
 	},
@@ -74,4 +60,21 @@ func init() {
 (default $settings/clients)`)
 	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputPrefix, "output-prefix", "trancode-client", "The start of the binary names")
 	buildCmd.PersistentFlags().BoolVarP(&buildSettings.NoCompress, "no-compress", "Z", false, "Don't zip binaries")
+}
+
+func finalizeBuildSettings(settings build.BuildSettings) build.BuildSettings {
+	if settings.OutputLocation == "" {
+		if common.IsSuperUser() {
+			if common.Os == "windows" {
+				settings.OutputLocation = filepath.Join(os.Getenv("ProgramData"), "transcodebot", "build")
+			} else {
+				// unix
+				settings.OutputLocation = "/var/transcodebot/build"
+			}
+		} else {
+			// Not superuser
+			settings.OutputLocation = filepath.Join(SettingsDir, "build", "")
+		}
+	}
+	return settings
 }
