@@ -31,6 +31,10 @@ var (
 	superuserForced bool
 )
 
+func IsInteractive() bool {
+	return true
+}
+
 func ForceSuperuser(value bool) {
 	if superuserForced {
 		PrintError("Superuser forced twice")

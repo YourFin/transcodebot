@@ -21,6 +21,10 @@
 package build
 
 import (
+	"os"
+	"path/filepath"
+	"fmt"
+
 	"github.com/yourfin/transcodebot/common"
 )
 
@@ -34,6 +38,34 @@ func Build(settings BuildSettings) error {
 	common.Println(settings.OutputLocation)
 	common.Println(settings.OutputPrefix)
 	common.Println(settings.NoCompress)
+
+	//get the dir we were called from so we can come back
+	calledPath, err := os.Getwd()
+	if err != nil {
+		common.PrintError("getting working directory err:", err)
+	}
+	calledPath, err = filepath.Abs(calledPath)
+	if err != nil {
+		common.PrintError("absolute path err:", err)
+	}
+
+	defer func() {
+		err = os.Chdir(calledPath)
+		if err != nil {
+			panic(fmt.Sprintf("change back to original working dir err: %s", err))
+		}
+	}()
+
+	err = os.Chdir(filepath.Join(
+		os.Getenv("GOPATH"),
+		"src",
+		"github.com",
+		"yourfin",
+		"transcodebot",
+		"client"))
+	if err != nil {
+		common.PrintError("Moving to build dir err:", err, "\nAre you sure your GOPATH environment variable is set?")
+	}
 
 	return nil
 }
