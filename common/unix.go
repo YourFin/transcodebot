@@ -45,7 +45,7 @@ func IsSuperUser() bool {
 }
 
 //Returns full path to the default settings directory location
-// ~/.local/share/transcodebot on unix's if
+// ~/.local/share/transcodebot on unix's if normal user
 func GetDefaultSettingsDir() string {
 	if IsSuperUser() {
 		return "/etc/transcodebot/"
