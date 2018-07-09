@@ -30,7 +30,11 @@ import (
 	"github.com/yourfin/transcodebot/common"
 )
 
-var SettingsDir string
+var (
+	SettingsDir string
+	forceSuperuser bool
+	forceNoSuperuser bool
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

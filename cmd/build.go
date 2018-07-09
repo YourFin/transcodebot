@@ -21,36 +21,53 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+
+
+	"github.com/yourfin/transcodebot/common"
+	"github.com/yourfin/transcodebot/build"
 )
 
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{
 	Use:   "build",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "build client binaries",
+	Long: `Build client binaries for target platforms`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("build called")
+		var err error
+		if len(args) != 0 {
+			err = buildCmd.Help()
+			if err != nil {
+				common.PrintError("build help err:", err)
+			}
+		}
+
+		if buildSettings.OutputLocation == "" {
+			if common.IsSuperUser() {
+				if common.Os == "windows" {
+					buildSettings.OutputLocation = os.Getenv("ProgramData")
+				}
+			}
+		}
+
+		err = build.Build(buildSettings)
+		if err != nil {
+			common.PrintError("build err:", err)
+		}
+
 	},
 }
+
+var buildSettings build.BuildSettings
 
 func init() {
 	rootCmd.AddCommand(buildCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// buildCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Configuration flags
+	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputLocation, "output-location", "", `The folder to place output binaries
+(default $settings/clients)`)
+	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputPrefix, "output-prefix", "trancode-client", "The start of the binary names")
+	buildCmd.PersistentFlags().BoolVarP(&buildSettings.NoCompress, "no-compress", "Z", false, "Don't zip binaries")
 }
