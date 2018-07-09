@@ -21,17 +21,18 @@
 package build
 
 import (
-
+	"fmt"
 )
 
 type BuildSettings struct {
 	OutputLocation string
 	OutputPrefix string
-	NoCompress Bool
+	NoCompress bool
 }
 
-func Build(settings BuildSettings, defaultBuild) error {
-	if settings.OutputLocation == "" {
-
-	}
+func Build(settings BuildSettings) error {
+	fmt.Println(settings.OutputLocation)
+	fmt.Println(settings.OutputPrefix)
+	fmt.Println(settings.NoCompress)
+	return nil
 }

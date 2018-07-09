@@ -22,6 +22,7 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -38,17 +39,21 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		if len(args) != 0 {
-			err = buildCmd.Help()
-			if err != nil {
-				common.PrintError("build help err:", err)
-			}
+			// TODO: Figure out how to call parent help function here
+			common.PrintError("build does not take any arguments")
 		}
 
 		if buildSettings.OutputLocation == "" {
 			if common.IsSuperUser() {
 				if common.Os == "windows" {
-					buildSettings.OutputLocation = os.Getenv("ProgramData")
+					buildSettings.OutputLocation = filepath.Join(os.Getenv("ProgramData"), "transcodebot", "build")
+				} else {
+					// unix
+					buildSettings.OutputLocation = "/var/transcodebot/build"
 				}
+			} else {
+				// Not superuser
+				buildSettings.OutputLocation = filepath.Join(SettingsDir, "build", "")
 			}
 		}
 
@@ -56,7 +61,6 @@ var buildCmd = &cobra.Command{
 		if err != nil {
 			common.PrintError("build err:", err)
 		}
-
 	},
 }
 
