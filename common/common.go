@@ -18,43 +18,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// +build darwin dragonfly freebsd js,wasm linux nacl netbsd openbsd solaris
-
 package common
 
 import (
 	"os"
-	"os/exec"
 	"log"
 	"fmt"
-
-	homedir "github.com/mitchellh/go-homedir"
 )
 
-const Os = "unix"
+var (
+	forceSuperuser bool
+	superuserForced bool
+)
 
-func IsSuperUser() bool {
+func ForceSuperuser(value bool) {
 	if superuserForced {
-		return forceSuperuser
+		common.PrintError("Superuser forced twice")
 	}
-	out, err := exec.Command("id -u").Output()
-	if err != nil {
-		log.Fatal("running system id command err:", err)
-	}
-	return string(out[:]) == "0"
+	forceSuperuser = value
+	superuserForced = true
 }
 
-//Returns full path to the default settings directory location
-// ~/.local/share/transcodebot on unix's if
-func GetDefaultSettingsDir() string {
+func PrintError(in ...interface{}) {
 	if IsSuperUser() {
-		return "/etc/transcodebot/"
+		log.Fatal(in...)
 	} else {
-		home, err := homedir.Expand("~/.local/share/transcodebot/")
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		return home
+		fmt.Println(in...)
+		os.Exit(1)
 	}
 }

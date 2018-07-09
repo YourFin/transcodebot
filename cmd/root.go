@@ -38,6 +38,9 @@ var rootCmd = &cobra.Command{
 	Short: "Cross-platform distributed ffmpeg-based transcoding pipeline",
 	Long: `Transcodebot is designed to simplify distributing ffmpeg transcoding to the background of computers with other jobs, e.g. various home computers.
 This is the server CLI, which can be used to generate statically complied clients that work with extremely minimal setup, as well as serve and recieve files to transcode from clients.`,
+	PersistentPreRun: func(_ *Command, _ []string) {
+		forceSuperuserInit()
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -51,7 +54,22 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&SettingsDir, "settings-dir", "", "")
+	settingsHelpString := fmt.Sprintf("The directory containing settings and state information.\n(Default: %s)", common.GetDefaultSettingsDir())
+	rootCmd.PersistentFlags().StringVar(&SettingsDir, "settings-dir", "", settingsHelpString)
+	rootCmd.PersistentFlags().BoolVar(&forceSuperuser, "force-su", false, "Force transcodebot to use superuser defaults")
+	rootCmd.PersistentFlags().BoolVar(&forceNoSuperuser, "force-no-su", false, "Force transcodebot to use normal user defaults")
+}
+
+func forceSuperuserInit() {
+	if forceSuperuser && forceNoSuperuser {
+		fmt.Println(`Cannot force superuser and force no superuser
+(both --force-su and --force-no-su flags present)`)
+		os.Exit(1)
+	} else if forceSuperuser {
+		common.ForceSuperuser(true)
+	} else if forceNoSuperuser {
+		common.ForceSuperuser(false)
+	}
 }
 
 // initConfig reads in config file

@@ -26,9 +26,11 @@ import (
 	"os"
 )
 
+const Os = "windows"
+
 func IsSuperUser() {
-	if forceSuperuser {
-		return true
+	if superuserForced {
+		return forceSuperuser
 	}
 	return false
 }
