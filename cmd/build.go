@@ -76,5 +76,12 @@ func finalizeBuildSettings(settings build.BuildSettings) build.BuildSettings {
 			settings.OutputLocation = filepath.Join(SettingsDir, "build", "")
 		}
 	}
+	var err error
+	settings.OutputLocation, err = filepath.Abs(settings.OutputLocation)
+	if err != nil {
+		common.PrintError("getting absolute filepath err:", err)
+	}
+	//TODO: Validate prefix
+
 	return settings
 }
