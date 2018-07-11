@@ -53,10 +53,6 @@ type BuildSettings struct {
 
 //Builds client binaries according to the passed in settings
 func Build(settings BuildSettings) error {
-	common.Println(settings.OutputLocation)
-	common.Println(settings.OutputPrefix)
-	common.Println(settings.NoCompress)
-
 	//get the dir we were called from so we can come back
 	calledPath, err := os.Getwd()
 	if err != nil {
@@ -116,15 +112,15 @@ func Build(settings BuildSettings) error {
 			builtName = builtName + ".exe"
 		}
 		command := exec.Command("go", "build", "-a", "-o", builtName)
+		//Duplicate entries are removed automatically on execution
 		command.Env = append(
 			os.Environ(),
 			"CGO=0",
 			"GOARCH=" + target.Arch.ToString(),
 			"GOOS=" + target.OS.ToString(),
 		)
-		fmt.Println(ii)
 		//Compile them
-		go func() {
+		go func(index int, target common.SystemType) {
 			//go build doesn't use stdout
 			stderr, err := command.CombinedOutput()
 			if len(stderr) != 0 {
@@ -132,15 +128,13 @@ func Build(settings BuildSettings) error {
 			} else if err != nil {
 				common.PrintError("Compile error building", target.ToString(), ":", err)
 			}
-			fmt.Println(ii)
-			doneChan <- ii
-		}()
+			doneChan <- index
+		}(ii, target)
 	}
 	for finishedCompiles := 0; finishedCompiles < len(settings.Targets); finishedCompiles++ {
 		doneNumber := <- doneChan
 		common.PrintVerbose(settings.Targets[doneNumber].ToString(), "compile finished")
 	}
-
 	return nil
 }
 
