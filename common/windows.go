@@ -26,7 +26,7 @@ import (
 	"os"
 )
 
-const Os = "windows"
+const BuildType = "windows"
 
 func IsSuperUser() {
 	if superuserForced {

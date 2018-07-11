@@ -26,10 +26,43 @@ import (
 	"fmt"
 )
 
+//Operating system name type
+//Should be limited to those that Go can target
+type OS string
+//Operating system system architecture
+//Should be limited to those that Go can target
+type Arch string
+
+//Basic system information
+type SystemType struct {
+	OS OS
+	Arch Arch
+}
+
+// Any additional architectures/OS's need to be added here
+const (
+	Linux OS = "linux"
+	Windows OS = "windows"
+	OSx OS = "darwin"
+	Amd64 Arch = "amd64"
+	I386 Arch = "386"
+)
+
 var (
 	forceSuperuser bool
 	superuserForced bool
 )
+
+func (system OS) ToString() string {
+	return string(system)
+}
+func (system Arch) ToString() string {
+	return string(system)
+}
+
+func (system SystemType) ToString() string {
+	return system.OS.ToString() + "-" + system.Arch.ToString()
+}
 
 func IsInteractive() bool {
 	return true

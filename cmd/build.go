@@ -58,14 +58,14 @@ func init() {
 	// Configuration flags
 	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputLocation, "output-location", "", `The folder to place output binaries
 (default $settings/clients)`)
-	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputPrefix, "output-prefix", "trancode-client", "The start of the binary names")
+	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputPrefix, "output-prefix", "trancode-client-", "The start of the binary names")
 	buildCmd.PersistentFlags().BoolVarP(&buildSettings.NoCompress, "no-compress", "Z", false, "Don't zip binaries")
 }
 
 func finalizeBuildSettings(settings build.BuildSettings) build.BuildSettings {
 	if settings.OutputLocation == "" {
 		if common.IsSuperUser() {
-			if common.Os == "windows" {
+			if common.BuildType == "windows" {
 				settings.OutputLocation = filepath.Join(os.Getenv("ProgramData"), "transcodebot", "build")
 			} else {
 				// unix
@@ -82,6 +82,13 @@ func finalizeBuildSettings(settings build.BuildSettings) build.BuildSettings {
 		common.PrintError("getting absolute filepath err:", err)
 	}
 	//TODO: Validate prefix
+
+	//Temporary
+	settings.Targets = []common.SystemType{
+		common.SystemType{common.Linux, common.Amd64},
+		common.SystemType{common.Windows, common.Amd64},
+		common.SystemType{common.Windows, common.I386},
+	}
 
 	return settings
 }

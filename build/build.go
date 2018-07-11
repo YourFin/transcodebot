@@ -22,6 +22,7 @@ package build
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"errors"
 	"fmt"
@@ -33,9 +34,10 @@ import (
 
 //Settings for building the clients
 type BuildSettings struct {
-	//The folder where the output will be placed
+	//The folder where the output will be placed, must be passed in as an absolute path.
 	//Default is is $cmd.SettingsDir/build
 	OutputLocation string
+
 	//Prefix for build output files.
 	//Will be followed by target arch and a file extension if applicable
 	//Default is transcode-client
@@ -44,6 +46,9 @@ type BuildSettings struct {
 	//if this variable is true, then the output binaries will not be zipped
 	//Default false
 	NoCompress bool
+
+	//List of system os/arch combinations to target
+	Targets []common.SystemType
 }
 
 //Builds client binaries according to the passed in settings
@@ -62,6 +67,7 @@ func Build(settings BuildSettings) error {
 		common.PrintError("absolute path err:", err)
 	}
 
+	//go back to the original working directory after the build
 	defer func() {
 		err = os.Chdir(calledPath)
 		if err != nil {
@@ -100,6 +106,39 @@ func Build(settings BuildSettings) error {
 			} else {
 				common.PrintError("Cowardly refusing to create output directory: " + settings.OutputLocation)
 			}
+	}
+
+	//Compile
+	doneChan := make(chan int)
+	for ii, target := range settings.Targets {
+		builtName := filepath.Join(settings.OutputLocation, settings.OutputPrefix + target.ToString())
+		if target.OS == common.Windows {
+			builtName = builtName + ".exe"
+		}
+		command := exec.Command("go", "build", "-a", "-o", builtName)
+		command.Env = append(
+			os.Environ(),
+			"CGO=0",
+			"GOARCH=" + target.Arch.ToString(),
+			"GOOS=" + target.OS.ToString(),
+		)
+		fmt.Println(ii)
+		//Compile them
+		go func() {
+			//go build doesn't use stdout
+			stderr, err := command.CombinedOutput()
+			if len(stderr) != 0 {
+				common.PrintError("Compile error building", target.ToString(), ":", string(stderr[:]))
+			} else if err != nil {
+				common.PrintError("Compile error building", target.ToString(), ":", err)
+			}
+			fmt.Println(ii)
+			doneChan <- ii
+		}()
+	}
+	for finishedCompiles := 0; finishedCompiles < len(settings.Targets); finishedCompiles++ {
+		doneNumber := <- doneChan
+		common.PrintVerbose(settings.Targets[doneNumber].ToString(), "compile finished")
 	}
 
 	return nil

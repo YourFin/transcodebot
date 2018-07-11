@@ -29,7 +29,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 )
 
-const Os = "unix"
+const BuildType = "unix"
 
 func IsSuperUser() bool {
 	if superuserForced {
