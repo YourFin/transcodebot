@@ -59,3 +59,10 @@ func Println(in ...interface{}) {
 		fmt.Println(in...)
 	}
 }
+
+// Print only if appropriate for verbosity
+func PrintVerbose(in ...interface{}) {
+	if ! IsSuperUser() {
+		fmt.Println(in...)
+	}
+}
