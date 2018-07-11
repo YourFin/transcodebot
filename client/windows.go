@@ -19,6 +19,6 @@
 // THE SOFTWARE.
 // +build windows
 
-package client
+package main
 
 // Number of threads with runtime.NumCPU()

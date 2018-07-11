@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-//go:binary-only-package
+// So this thing breaks things?
+////go:binary-only-package
 
-package client
+package main
