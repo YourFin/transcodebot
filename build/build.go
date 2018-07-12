@@ -99,6 +99,7 @@ func Build(settings BuildSettings) error {
 				if err != nil {
 					common.PrintError("Creating output directory err:", err)
 				}
+				common.Println("Building...")
 			} else {
 				common.PrintError("Cowardly refusing to create output directory: " + settings.OutputLocation)
 			}
@@ -119,7 +120,9 @@ func Build(settings BuildSettings) error {
 			"GOARCH=" + target.Arch.ToString(),
 			"GOOS=" + target.OS.ToString(),
 		)
-		//Compile them
+		//Note that range variables are shared between
+		//loops but others are not, hence the passing by
+		//value
 		go func(index int, target common.SystemType) {
 			//go build doesn't use stdout
 			stderr, err := command.CombinedOutput()
@@ -156,9 +159,9 @@ func findExistingParentDir(dirname string) (existing string, nonexistent string,
 			existing = dirname
 			return
 		} else {
-			fmt.Println("fileinfo:", fileinfo)
-			fmt.Println("err:", err)
-			fmt.Println("dirname:", dirname)
+			common.Println("fileinfo:", fileinfo)
+			common.Println("err:", err)
+			common.Println("dirname:", dirname)
 			panic("Reached a place that was thought to be unreachable. Contact the maintainer of transcodebot with the above three lines")
 		}
 	}
