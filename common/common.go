@@ -39,6 +39,43 @@ type SystemType struct {
 	Arch Arch
 }
 
+// Settings to pass to ffmpeg to use for transcoding
+// Most of these settings line up with something in the ffmeg documentation, and
+type TranscodeSettings struct {
+	//Optionally short-circuit all of the built in logic and specify the command manually, and ignore all other options.
+	//Pseudocode of what happens if this option is not zero-length:
+	//for line in RawffmpegOptions:
+	//	Sys.Execute("ffmpeg -nostdin -i $inputfile $line")
+	RawffmpegOptions []string
+
+	//If false, error if a stream is found that cannot be converted
+	HandleUnuseableStreams bool
+	//If true and HandleUnuseableStreams is true, throw out streams that can't be converted to a target type
+	//If false, pass through the stream to the output unmolested
+	TossUnuseableStreams bool
+	//The containing file type, i.e. webm, mkv, mp4, mov
+	ContainerType string
+
+	//Video options:
+
+	//Video Codec to use
+	VideoCodec string
+	//Subpixel format
+	PixFormat string
+	//Speed parameter for the primary (second in two pass) encoding pass
+	PrimaryPassSpeed uint8
+	//Whether to do two-pass encoding
+	TwoPass bool
+	//Speed parameter for the log (first and possibly omitted) pass
+	PreliminaryPassSpeed uint8
+
+	//Audio codec to use
+	AudioCodec string
+
+	//Subtitle codec to use
+	SubtitleCodec string
+}
+
 // Any additional architectures/OS's need to be added here
 const (
 	Linux OS = "linux"
