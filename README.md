@@ -49,6 +49,7 @@ It's much easier to only have a single program to run than having to install a j
    - Figure out when superuser
  - Prettify server download page
  - Run only on wall power
+   - github.com/distatus/battery
 
 ## Licence
 MIT
