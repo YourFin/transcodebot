@@ -4,7 +4,18 @@ Transcodebot is a "batteries included" system for distributing large video trans
 
 ### Quick setup
 [Install go](INSERT LINK)
-    go install github.com/yourfin/transcodebot
+    go get -u github.com/yourfin/transcodebot/...
+
+## Useage
+### `build`
+Build the self-contained client binaries.
+
+### `watch`
+Watch a folder for new files to transcode, and push them out to be transcoded as they come in.
+Also runs a web server to download clients from.
+
+### `one-shot`
+Like watch, but only the files in the folder when the command is called are transcoded.
 
 ## Design
 Transcodebot is designed for client machines that have generally have something better to do.
