@@ -69,7 +69,7 @@ func echo(ww http.ResponseWriter, rr *http.Request) {
 	}
 }
 
-func main() {
+func ServeAll() {
 	fmt.Printf("%s\n", common.Computer{})
 	fs := http.FileServer(http.Dir("clients"))
 	http.Handle("/clients/", http.StripPrefix("/clients", fs))
