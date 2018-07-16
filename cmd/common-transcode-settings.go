@@ -21,37 +21,38 @@
 package cmd
 
 import (
-
 	"github.com/spf13/cobra"
+
 	"github.com/yourfin/transcodebot/server/transcode"
+	"github.com/yourfin/transcodebot/common"
 )
 
-// watchCmd represents the watch command
-var watchCmd = &cobra.Command{
-	Use:   "watch",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+var transcodeServerSettings *transcode.TranscodeServerSettings
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		transcode.Watch(watchSettings, *transcodeServerSettings, args)
-	},
-}
-var watchSettings transcode.WatchSettings
+func addCommonOptions(command *cobra.Command) *transcode.TranscodeServerSettings {
+	options := &transcode.TranscodeServerSettings{}
+	//Figure out default port
+	var defaultPort uint
+	if common.IsSuperUser() {
+		defaultPort = 80
+	} else {
+		defaultPort = 9090
+	}
 
-func init() {
-	rootCmd.AddCommand(watchCmd)
+	// web server
+	command.PersistentFlags().BoolVarP(
+		&options.NoWebServer,
+		"no-webserver",
+		"w",
+		false,
+		"Don't run a webserver for serving binaries")
 
-	watchSettings = transcode.WatchSettings{}
+	command.PersistentFlags().UintVar(&options.WebServerPort, "webserver-port", defaultPort, "Port to run the binary webserver on.")
 
-	regexHelp := `regex that input files must match`
-	watchCmd.PersistentFlags().StringVarP(&watchSettings.Regex, "regex", "x", `\.(mp4|mov|mpeg|webm|mkv|avi|mts|wmv)$`, regexHelp)
+	outputDirHelp := "Folder to place transcoded files into"
+	command.PersistentFlags().StringVarP(&options.OutputFolder, "output-dir", "o", "./", outputDirHelp)
 
-	watchCmd.PersistentFlags().BoolVarP(&watchSettings.Recursive, "recursive", "r", false, "search recursivly for files to transcode")
+	command.PersistentFlags().StringVarP(&options.OutputSuffix, "suffix", "s", "-transcoded", "suffix to append to files, not including file extension")
 
-	//Defined in ./transcode.go
-	transcodeServerSettings = addCommonOptions(watchCmd)
+	return options
 }

@@ -18,17 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package cmd
+package transcode
 
 import (
-	"github.com/spf13/cobra"
-
-	"github.com/yourfin/transcodebot/server/transcode"
+	"github.com/yourfin/transcodebot/common"
 )
 
-func addCommonOptions(command *cobra.Command) *transcode.TranscodeOptions {
-	var options *transcode.TranscodeOptions
-	// web server
-	command.PersistentFlags().BoolVarP(&options.NoWebServer, "no-webserver", "w", false, "Don't run a webserver for serving binaries")
-	command.PersistentFlags().Uint(&options.WebServerPort, )
+//Settings for watch
+type WatchSettings struct {
+	//Regex that files must match
+	Regex string
+	//Recursively look for files
+	Recursive bool
+}
+
+func Watch(watchSettings WatchSettings, trascodeSettings TranscodeServerSettings, folders []string) {
+	common.Println("Watch called")
 }

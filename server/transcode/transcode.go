@@ -21,15 +21,21 @@
 package transcode
 
 import (
-	"github.com/yourfin/transcodebot/common"
 )
 
 type TranscodeServerSettings struct {
+	//If true, don't start a web server to serve the clients
 	NoWebServer bool
+	//Port to run the client binary serving web server on
 	WebServerPort uint
+	//Folder to drop output into
 	OutputFolder string
-	ValidInput string
-	Recursive bool
+	//String to append to file names (before the extension)
 	OutputSuffix string
-	TranscodeSettings common.TranscodeSettings
+	//TODO
+	//If true, don't test that files are something can be ingested on the server prior to serving
+	NoFFProbeTest bool
+	//TODO
+	//TranscodeSettings common.TranscodeSettings
+	//Max concurrent transfers
 }
