@@ -29,6 +29,7 @@ import (
 	//"github.com/yourfin/transcodebot/common"
 	"github.com/gorilla/websocket"
 )
+//gobuffalo/packr for files
 
 func main() {
 	interrupt := make(chan os.Signal, 1)

@@ -35,6 +35,7 @@ It's much easier to only have a single program to run than having to install a j
  - OSX
  - Download ffmpeg from external source
  - Default client file
+ - Show documentation on startup for clients: skratchdot/opengolang
  - Pause when listed processes seen
    - Widows: DebugActiveProcess
    - Unix: SIGSTOP SIGCONT
