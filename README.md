@@ -1,5 +1,5 @@
 # NOTE: This software is under construction and doesn't do much that this README says it does
-# Transcodebot
+# Transcodebot 🎞🤖
 Transcodebot is a "batteries included" system for distributing large video transcoding tasks to computers that have other jobs, like being workstations or browsing machines.
 
 ### Quick setup
@@ -15,7 +15,7 @@ Watch a folder for new files to transcode, and push them out to be transcoded as
 Also runs a web server to download clients from.
 
 ### `one-shot`
-Like watch, but only the files in the folder when the command is called are transcoded.
+Like watch, but only the files passed in on the command line are transcoded
 
 ## Design
 Transcodebot is designed for client machines that have generally have something better to do.
