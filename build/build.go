@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"errors"
 	"fmt"
+	"net"
 
 	"github.com/songmu/prompter"
 
@@ -35,7 +36,7 @@ import (
 //Settings for building the clients
 type BuildSettings struct {
 	//The folder where the output will be placed, must be passed in as an absolute path.
-	//Default is is $cmd.SettingsDir/build
+	//Default is is $common.SettingsDir/build
 	OutputLocation string
 
 	//Prefix for build output files.
@@ -47,12 +48,23 @@ type BuildSettings struct {
 	//Default false
 	NoCompress bool
 
+	//Force a new server certificate to be generated
+	//Invalidates all previous clients
+	ForceNewCert bool
+
+	//Valid IP's for the main server
+	ServerIPs []net.IP
+
 	//List of system os/arch combinations to target
 	Targets []common.SystemType
 }
 
 //Builds client binaries according to the passed in settings
 func Build(settings BuildSettings) error {
+	if settings.ForceNewCert { //or no cert exists
+		GenCerts(settings.ServerIPs, settings.OutputLocation, settings.OutputLocation)
+	}
+
 	//get the dir we were called from so we can come back
 	calledPath, err := os.Getwd()
 	if err != nil {
@@ -138,6 +150,7 @@ func Build(settings BuildSettings) error {
 		doneNumber := <- doneChan
 		common.PrintVerbose(settings.Targets[doneNumber].ToString(), "compile finished")
 	}
+	common.PrintVerbose("All complies finished. Binaries at:", settings.OutputLocation)
 	return nil
 }
 

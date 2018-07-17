@@ -60,6 +60,7 @@ func init() {
 (default $settings/clients)`)
 	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputPrefix, "output-prefix", "trancode-client-", "The start of the binary names")
 	buildCmd.PersistentFlags().BoolVarP(&buildSettings.NoCompress, "no-compress", "Z", false, "Don't zip binaries")
+	buildCmd.PersistentFlags().BoolVar(&buildSettings.ForceNewCert, "force-new-certificate", false, "Force a new server SSL certificate to be generated. Invalidates all previous clients.")
 }
 
 func finalizeBuildSettings(settings build.BuildSettings) build.BuildSettings {
