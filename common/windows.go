@@ -28,7 +28,7 @@ import (
 
 const BuildType = "windows"
 
-func IsSuperUser() {
+func IsSuperUser() bool {
 	if superuserForced {
 		return forceSuperuser
 	}
