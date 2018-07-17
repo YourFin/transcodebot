@@ -38,6 +38,16 @@ type SystemType struct {
 	OS OS
 	Arch Arch
 }
+func (system OS) ToString() string {
+	return string(system)
+}
+func (system Arch) ToString() string {
+	return string(system)
+}
+
+func (system SystemType) ToString() string {
+	return system.OS.ToString() + "-" + system.Arch.ToString()
+}
 
 // Settings to pass to ffmpeg to use for transcoding
 // Most of these settings line up with something in the ffmeg documentation, and
@@ -88,22 +98,9 @@ const (
 var (
 	forceSuperuser bool
 	superuserForced bool
+	SettingsDir string
 )
 
-func (system OS) ToString() string {
-	return string(system)
-}
-func (system Arch) ToString() string {
-	return string(system)
-}
-
-func (system SystemType) ToString() string {
-	return system.OS.ToString() + "-" + system.Arch.ToString()
-}
-
-func IsInteractive() bool {
-	return true
-}
 
 func ForceSuperuser(value bool) {
 	if superuserForced {

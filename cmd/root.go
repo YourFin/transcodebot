@@ -31,7 +31,6 @@ import (
 )
 
 var (
-	SettingsDir string
 	forceSuperuser bool
 	forceNoSuperuser bool
 )
@@ -59,7 +58,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	settingsHelpString := fmt.Sprintf("The directory containing settings and state information.\n(Default: %s)", common.GetDefaultSettingsDir())
-	rootCmd.PersistentFlags().StringVar(&SettingsDir, "settings-dir", "", settingsHelpString)
+	rootCmd.PersistentFlags().StringVar(&common.SettingsDir, "settings-dir", "", settingsHelpString)
 	rootCmd.PersistentFlags().BoolVar(&forceSuperuser, "force-su", false, "Force transcodebot to use superuser defaults")
 	rootCmd.PersistentFlags().BoolVar(&forceNoSuperuser, "force-no-su", false, "Force transcodebot to use normal user defaults")
 }
@@ -78,10 +77,10 @@ func forceSuperuserInit() {
 
 // initConfig reads in config file
 func initConfig() {
-	if SettingsDir == "" {
-		SettingsDir = common.GetDefaultSettingsDir()
+	if common.SettingsDir == "" {
+		common.SettingsDir = common.GetDefaultSettingsDir()
 	}
-	viper.AddConfigPath(SettingsDir)
+	viper.AddConfigPath(common.SettingsDir)
 	viper.SetConfigName("server-config.yaml")
 
 	viper.AutomaticEnv() // read in environment variables that match

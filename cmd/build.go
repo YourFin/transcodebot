@@ -73,7 +73,7 @@ func finalizeBuildSettings(settings build.BuildSettings) build.BuildSettings {
 			}
 		} else {
 			// Not superuser
-			settings.OutputLocation = filepath.Join(SettingsDir, "build", "")
+			settings.OutputLocation = filepath.Join(common.SettingsDir, "build", "")
 		}
 	}
 	var err error
