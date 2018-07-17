@@ -6,7 +6,7 @@ Transcodebot is a "batteries included" system for distributing large video trans
 [Install go](INSERT LINK)
     go get -u github.com/yourfin/transcodebot/...
 
-## Useage
+## Usage
 ### `build`
 Build the self-contained client binaries.
 
