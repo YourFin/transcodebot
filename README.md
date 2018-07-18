@@ -1,6 +1,6 @@
 # NOTE: This software is under construction and doesn't do much that this README says it does
 # Transcodebot 🎞🤖
-While there are plenty of solutions around for distributing video transcoding (or large workloads in general), they are designed with linux as the only target platform for distributing too. And while that is fine for corprate entities, most people don't have access to large numbers of computers that they can run a nonstandard OS on and dedicate wholly to transcoding. Many people do, however, have a few computers that generally run very light loads on non-Linux operating systems. Transcodebot is designed to leverage these kinds of machines towards batch transcoding tasks with minimal interuption in their primary use as web browsing machines.
+While there are plenty of solutions around for distributing video transcoding (or large workloads in general), they are designed with linux as the only target platform for distributing to. And while that is fine for corprate entities, most people don't have access to large numbers of computers that they can run a nonstandard OS on and dedicate wholly to transcoding. Many people do, however, have a few computers that generally run very light loads on non-Linux operating systems. Transcodebot is designed to leverage these kinds of machines towards batch transcoding tasks with minimal interuption in their primary use as web browsing machines.
 
 It also provides sane defaults for video transcoding to minimize the amount of research needed to transcode video.
 
