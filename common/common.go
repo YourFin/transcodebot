@@ -98,7 +98,6 @@ const (
 var (
 	forceSuperuser bool
 	superuserForced bool
-	SettingsDir string
 )
 
 

@@ -24,11 +24,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"errors"
 	"fmt"
 	"net"
-
-	"github.com/songmu/prompter"
 
 	"github.com/yourfin/transcodebot/common"
 )
@@ -94,30 +91,10 @@ func Build(settings BuildSettings) error {
 		common.PrintError("Moving to build dir err:", err, "\nAre you sure your GOPATH environment variable is set?")
 	}
 
-	// Handle (non)existence of build directory
-	existing, nonexistent, info, err := findExistingParentDir(settings.OutputLocation)
-	if err != nil {
-		return err
-	} else if nonexistent != "" {
-		if prompter.YN(
-			fmt.Sprintf(
-				"%s does not exist, but %s does.\nCreate intermediate folders?",
-				settings.OutputLocation,
-				existing,
-			),
-			// Default to no for no tty
-			false) {
-				err = os.MkdirAll(settings.OutputLocation, info.Mode())
-				if err != nil {
-					common.PrintError("Creating output directory err:", err)
-				}
-				common.Println("Building...")
-			} else {
-				common.PrintError("Cowardly refusing to create output directory: " + settings.OutputLocation)
-			}
-	}
+	common.CowardlyCreateDir(settings.OutputLocation)
 
 	//Compile
+	common.Println("Building...")
 	doneChan := make(chan int)
 	for ii, target := range settings.Targets {
 		builtName := filepath.Join(settings.OutputLocation, settings.OutputPrefix + target.ToString())
@@ -152,30 +129,4 @@ func Build(settings BuildSettings) error {
 	}
 	common.PrintVerbose("All complies finished. Binaries at:", settings.OutputLocation)
 	return nil
-}
-
-//Works upwards on the path until it finds an existing dir
-//Will probably break on windows with non-existent drives
-func findExistingParentDir(dirname string) (existing string, nonexistent string, fileinfo os.FileInfo, err error) {
-	nonexistent = ""
-	err = nil
-	for {
-		fileinfo, err = os.Stat(dirname)
-		if err != nil && os.IsNotExist(err) {
-			nonexistent = filepath.Join(filepath.Base(dirname), nonexistent)
-			dirname = filepath.Dir(dirname)
-		} else if err != nil {
-			panic("Unhandled error finding parent dir (build.findExistingParentDir):" + err.Error())
-		}	else if !fileinfo.IsDir() {
-			return dirname, "", nil, errors.New("non-directory file exists as subset of filepath:" + dirname)
-		} else if fileinfo.IsDir() {
-			existing = dirname
-			return
-		} else {
-			common.Println("fileinfo:", fileinfo)
-			common.Println("err:", err)
-			common.Println("dirname:", dirname)
-			panic("Reached a place that was thought to be unreachable. Contact the maintainer of transcodebot with the above three lines")
-		}
-	}
 }
