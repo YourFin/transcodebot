@@ -77,6 +77,19 @@ func createCert(template, parent *x509.Certificate, pub, parentPriv interface{})
 	return cert, certPEM
 }
 
+//Turns private key into file storeable form
+func privateKeyPEMify(privateKey *rsa.PrivateKey) []byte {
+	return pem.EncodeToMemory(&pem.Block{
+		Type: "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+	})
+}
+
+//Write out privateKey to file
+func privateKeyToFile(privateKey *rsa.PrivateKey, filename string) error {
+	return common.SettingsWriteFile(privateKeyPEMify(privateKey), filename)
+}
+
 func certTemplate() *x509.Certificate {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
