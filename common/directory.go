@@ -30,17 +30,42 @@ import (
 	"github.com/songmu/prompter"
 )
 
-//Must be sanitized with filepath.abs
-var SettingsDir string
+var (
+	settingsDir string
+	settingsDirSet bool = false
+)
 
+//Sets internal settings directory. Will panic if called more than once.
+func SetSettingsDir(settingsDirIn string) {
+	if settingsDirSet {
+		panic("common: attempted to set settings dir when alread set")
+	}
+	settingsDirSet = true
+	//Need to do this to avoid shadowing settingsDir with
+	// :=
+	var err error
+	settingsDir, err = filepath.Abs(settingsDirIn)
+	if err != nil {
+		PrintError("Set settings dir err:", err)
+	}
+}
+
+//Safely get the settings directory
+func SettingsDir() string {
+	if ! settingsDirSet {
+		panic("Attempted to get settings dir when not set")
+	}
+	return settingsDir
+}
+
+//Safely write data bytes to a file inside the settings directory.
 func SettingsWriteFile(data []byte, relPath ...string) error {
-	fullPath := SettingsDir + filepath.Join(relPath...)
-	parentDir := filepath.Dir(fullPath)
-	parentInfo, err := os.Stat(parentDir)
+	fullPath := SettingsDir() + string(filepath.Separator) + filepath.Join(relPath...)
+	err := CowardlyCreateDir(parentDir)
 	if err != nil {
 		return err
 	}
-	err = CowardlyCreateDir(fullPath)
+	parentInfo, err := os.Stat(parentDir)
 	if err != nil {
 		return err
 	}
@@ -55,11 +80,11 @@ func CowardlyCreateDir(dirname string) error {
 
 	//I'm not happy with this, but every solution I come up with
 	//seems grosser
-	prompt := func(toPrompt string) error {
+	prompt := func(toPrompt string, dirToMake string) error {
 		if prompter.YN(
 			fmt.Sprintf(
 				toPrompt,
-				dirname,
+				dirToMake,
 				existing,
 			),
 			false, // Default to no for no tty
@@ -74,14 +99,14 @@ func CowardlyCreateDir(dirname string) error {
 	if err != nil {
 		return err
 	} else if nonexistent != "" {
-		if pathStartsWith(dirname, SettingsDir) {
-			if !pathStartsWith(existing, SettingsDir) {
-				promptErr = prompt("Settings directory %s does not exist, but %s does.\nCreate intermediate folders?")
+		if pathStartsWith(dirname, SettingsDir()) {
+			if !pathStartsWith(existing, SettingsDir()) {
+				promptErr = prompt("Settings directory %s does not exist, but %s does.\nCreate intermediate folders?", SettingsDir())
 			} else {
 				promptErr = nil
 			}
 		} else {
-			err = prompt("%s does not exist, but %s does.\nCreate intermediate folders?")
+			err = prompt("%s does not exist, but %s does.\nCreate intermediate folders?", dirname)
 		}
 	} else {
 		return err
@@ -93,7 +118,7 @@ func CowardlyCreateDir(dirname string) error {
 	}
 }
 
-
+//Returns true if the first part of checkee is targetStart. Just returns false if it can't parse the data, which probably needs to be replaced with error handling
 func pathStartsWith(checkee, targetStart string) bool {
 	//Sanitize input
 	checkee, err := filepath.Abs(checkee)
@@ -111,8 +136,8 @@ func pathStartsWith(checkee, targetStart string) bool {
 }
 
 func settingsDirExists() bool {
-	existing, _, _, err := findExistingParentDir(SettingsDir)
-	return err != nil && existing == SettingsDir
+	existing, _, _, err := findExistingParentDir(SettingsDir())
+	return err != nil && existing == SettingsDir()
 }
 
 //Works upwards on the path until it finds an existing dir

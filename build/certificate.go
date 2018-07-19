@@ -34,14 +34,25 @@ import (
 	"github.com/yourfin/transcodebot/common"
 )
 
+const (
+	rootKeyFileName    string = "root.keyfile"
+	rootCertFileName   string = "root.crt"
+	clientKeyFileName  string = "client.keyfile"
+	clientCertFileName string = "client.crt"
+)
+
 //Much here taken from https://ericchiang.github.io/post/go-tls
 
 //Generate server and client certificates and dump them to files
 //the destinations should be folders, not full paths
-func GenCerts(serverIPs []net.IP, clientDestination, serverDestination string) {
-	//rootCert, rootCertPEM, rootKey := genRootCert(serverIPs)
-	_, certPEM, _:= genRootCert(serverIPs)
-	common.Println(string(certPEM[:]))
+func GenRootCert(serverIPs []net.IP, clientDestination, serverDestination string) {
+	common.PrintVerbose("Generating certificates...")
+	//_, certPEM, _:= genRootCert(serverIPs)
+	//common.Println(string(certPEM[:]))
+	_, rootCertPEM, rootKey := genRootCert(serverIPs)
+
+	writeCertFile(rootCertPEM, rootCertFileName)
+	writeCertFile(privateKeyPEMify(rootKey), rootKeyFileName)
 }
 
 func genRootCert(serverIPs []net.IP) (*x509.Certificate, []byte, *rsa.PrivateKey) {
@@ -85,9 +96,25 @@ func privateKeyPEMify(privateKey *rsa.PrivateKey) []byte {
 	})
 }
 
-//Write out privateKey to file
-func privateKeyToFile(privateKey *rsa.PrivateKey, filename string) error {
-	return common.SettingsWriteFile(privateKeyPEMify(privateKey), filename)
+// Procedure:
+//	writeCertFile
+// Purpose:
+//	Helper for writing out cert files in $SettingsDir/cert/
+// Parameters:
+//	The data to be written to the file: data []byte
+//  The file name to write to: fileName
+// Produces:
+//	Side effects
+// Preconditions:
+//  fileName is a valid filename on the system
+//  fileName doesn't contain path seperator characters
+// Postconditions:
+//  $SettingsDir/cert/$fileName contains $data, or an error is printed
+func writeCertFile(data []byte, fileName string) {
+	err := common.SettingsWriteFile(data, "cert", fileName)
+	if err != nil {
+		common.PrintError("Writing Cert file err:", err)
+	}
 }
 
 func certTemplate() *x509.Certificate {

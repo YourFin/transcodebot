@@ -21,9 +21,6 @@
 package cmd
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/spf13/cobra"
 
 	"github.com/yourfin/transcodebot/common"
@@ -56,33 +53,12 @@ func init() {
 	rootCmd.AddCommand(buildCmd)
 
 	// Configuration flags
-	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputLocation, "output-location", "", `The folder to place output binaries
-(default $settings/clients)`)
 	buildCmd.PersistentFlags().StringVar(&buildSettings.OutputPrefix, "output-prefix", "trancode-client-", "The start of the binary names")
 	buildCmd.PersistentFlags().BoolVarP(&buildSettings.NoCompress, "no-compress", "Z", false, "Don't zip binaries")
 	buildCmd.PersistentFlags().BoolVar(&buildSettings.ForceNewCert, "force-new-certificate", false, "Force a new server SSL certificate to be generated. Invalidates all previous clients.")
 }
 
 func finalizeBuildSettings(settings build.BuildSettings) build.BuildSettings {
-	if settings.OutputLocation == "" {
-		if common.IsSuperUser() {
-			if common.BuildType == "windows" {
-				settings.OutputLocation = filepath.Join(os.Getenv("ProgramData"), "transcodebot", "build")
-			} else {
-				// unix
-				settings.OutputLocation = "/var/transcodebot/build"
-			}
-		} else {
-			// Not superuser
-			settings.OutputLocation = filepath.Join(common.SettingsDir, "build", "")
-		}
-	}
-	var err error
-	settings.OutputLocation, err = filepath.Abs(settings.OutputLocation)
-	if err != nil {
-		common.PrintError("getting absolute filepath err:", err)
-	}
-	//TODO: Validate prefix
 
 	//Temporary
 	settings.Targets = []common.SystemType{

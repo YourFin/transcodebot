@@ -33,6 +33,7 @@ import (
 var (
 	forceSuperuser bool
 	forceNoSuperuser bool
+	settingsDirProxy string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -58,7 +59,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	settingsHelpString := fmt.Sprintf("The directory containing settings and state information.\n(Default: %s)", common.GetDefaultSettingsDir())
-	rootCmd.PersistentFlags().StringVar(&common.SettingsDir, "settings-dir", "", settingsHelpString)
+	rootCmd.PersistentFlags().StringVar(&settingsDirProxy, "settings-dir", "", settingsHelpString)
 	rootCmd.PersistentFlags().BoolVar(&forceSuperuser, "force-su", false, "Force transcodebot to use superuser defaults")
 	rootCmd.PersistentFlags().BoolVar(&forceNoSuperuser, "force-no-su", false, "Force transcodebot to use normal user defaults")
 }
@@ -75,18 +76,40 @@ func forceSuperuserInit() {
 	}
 }
 
-// initConfig reads in config file
-func initConfig() {
-	if common.SettingsDir == "" {
-		common.SettingsDir = common.GetDefaultSettingsDir()
-	}
-	viper.AddConfigPath(common.SettingsDir)
-	viper.SetConfigName("server-config.yaml")
+//func VerifySettingsDir
+//if settings.OutputLocation == "" {
+//if common.IsSuperUser() {
+//if common.BuildType == "windows" {
+//settings.OutputLocation = filepath.Join(os.Getenv("ProgramData"), "transcodebot", "build")
+//} else {
+//// unix
+//settings.OutputLocation = "/var/transcodebot/build"
+//}
+//} else {
+//// Not superuser
+//settings.OutputLocation = filepath.Join(common.SettingsDir(), "build", "")
+//}
+//}
+//var err error
+//settings.OutputLocation, err = filepath.Abs(settings.OutputLocation)
+//if err != nil {
+//common.PrintError("getting absolute filepath err:", err)
+//}
+////TODO: Validate prefix
 
-	viper.AutomaticEnv() // read in environment variables that match
+
+// Reads in config file and sets settings dir
+func initConfig() {
+	viper.AutomaticEnv() // read in environment variables that match settings
+	if settingsDirProxy == "" {
+		settingsDirProxy = common.GetDefaultSettingsDir()
+	}
+	common.SetSettingsDir(settingsDirProxy)
+	viper.AddConfigPath(common.SettingsDir())
+	viper.SetConfigName("server-config.yaml")
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		common.PrintVerbose("Using config file:", viper.ConfigFileUsed())
 	}
 }

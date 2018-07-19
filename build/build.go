@@ -32,14 +32,11 @@ import (
 
 //Settings for building the clients
 type BuildSettings struct {
-	//The folder where the output will be placed, must be passed in as an absolute path.
-	//Default is is $common.SettingsDir/build
-	OutputLocation string
-
 	//Prefix for build output files.
 	//Will be followed by target arch and a file extension if applicable
 	//Default is transcode-client
 	OutputPrefix string
+
 	//Whether or not to compress the files
 	//if this variable is true, then the output binaries will not be zipped
 	//Default false
@@ -55,11 +52,14 @@ type BuildSettings struct {
 	//List of system os/arch combinations to target
 	Targets []common.SystemType
 }
+const build_extention = "clients"
 
 //Builds client binaries according to the passed in settings
 func Build(settings BuildSettings) error {
+	buildDir := filepath.Join(common.SettingsDir(), build_extention)
+
 	if settings.ForceNewCert { //or no cert exists
-		GenCerts(settings.ServerIPs, settings.OutputLocation, settings.OutputLocation)
+		GenRootCert(settings.ServerIPs, buildDir, buildDir)
 	}
 
 	//get the dir we were called from so we can come back
@@ -91,13 +91,13 @@ func Build(settings BuildSettings) error {
 		common.PrintError("Moving to build dir err:", err, "\nAre you sure your GOPATH environment variable is set?")
 	}
 
-	common.CowardlyCreateDir(settings.OutputLocation)
+	common.CowardlyCreateDir(buildDir)
 
 	//Compile
 	common.Println("Building...")
 	doneChan := make(chan int)
 	for ii, target := range settings.Targets {
-		builtName := filepath.Join(settings.OutputLocation, settings.OutputPrefix + target.ToString())
+		builtName := filepath.Join(buildDir, settings.OutputPrefix + target.ToString())
 		if target.OS == common.Windows {
 			builtName = builtName + ".exe"
 		}
@@ -127,6 +127,6 @@ func Build(settings BuildSettings) error {
 		doneNumber := <- doneChan
 		common.PrintVerbose(settings.Targets[doneNumber].ToString(), "compile finished")
 	}
-	common.PrintVerbose("All complies finished. Binaries at:", settings.OutputLocation)
+	common.PrintVerbose("All complies finished. Binaries at:", buildDir)
 	return nil
 }
