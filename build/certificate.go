@@ -47,15 +47,6 @@ const (
 //the destinations should be folders, not full paths
 func GenRootCert(serverIPs []net.IP, clientDestination, serverDestination string) {
 	common.PrintVerbose("Generating certificates...")
-	//_, certPEM, _:= genRootCert(serverIPs)
-	//common.Println(string(certPEM[:]))
-	_, rootCertPEM, rootKey := genRootCert(serverIPs)
-
-	writeCertFile(rootCertPEM, rootCertFileName)
-	writeCertFile(privateKeyPEMify(rootKey), rootKeyFileName)
-}
-
-func genRootCert(serverIPs []net.IP) (*x509.Certificate, []byte, *rsa.PrivateKey) {
 	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		common.PrintError("certificate key err:", err)
@@ -67,9 +58,12 @@ func genRootCert(serverIPs []net.IP) (*x509.Certificate, []byte, *rsa.PrivateKey
 	rootCertTmpl.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature
 	rootCertTmpl.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth}
 	rootCertTmpl.IPAddresses = serverIPs
-	cert, certPEM := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
-	return cert, certPEM, rootKey
+	_, rootCertPEM := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
+
+	writeCertFile(rootCertPEM, rootCertFileName)
+	writeCertFile(privateKeyPEMify(rootKey), rootKeyFileName)
 }
+
 
 func createCert(template, parent *x509.Certificate, pub, parentPriv interface{}) (*x509.Certificate, []byte) {
 	certDER, err := x509.CreateCertificate(rand.Reader, template, parent, pub, parentPriv)
