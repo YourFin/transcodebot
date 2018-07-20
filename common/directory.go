@@ -61,6 +61,7 @@ func SettingsDir() string {
 //Safely write data bytes to a file inside the settings directory.
 func SettingsWriteFile(data []byte, relPath ...string) error {
 	fullPath := SettingsDir() + string(filepath.Separator) + filepath.Join(relPath...)
+	parentDir := filepath.Dir(fullPath)
 	err := CowardlyCreateDir(parentDir)
 	if err != nil {
 		return err
