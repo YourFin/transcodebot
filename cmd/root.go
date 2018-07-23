@@ -78,28 +78,6 @@ func forceSuperuserInit() {
 	}
 }
 
-//func VerifySettingsDir
-//if settings.OutputLocation == "" {
-//if common.IsSuperUser() {
-//if common.BuildType == "windows" {
-//settings.OutputLocation = filepath.Join(os.Getenv("ProgramData"), "transcodebot", "build")
-//} else {
-//// unix
-//settings.OutputLocation = "/var/transcodebot/build"
-//}
-//} else {
-//// Not superuser
-//settings.OutputLocation = filepath.Join(common.SettingsDir(), "build", "")
-//}
-//}
-//var err error
-//settings.OutputLocation, err = filepath.Abs(settings.OutputLocation)
-//if err != nil {
-//common.PrintError("getting absolute filepath err:", err)
-//}
-////TODO: Validate prefix
-
-
 // Reads in config file and sets settings dir
 func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match settings
