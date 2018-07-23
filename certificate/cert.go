@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package build
+package certificate
 
 import (
 	"crypto/rsa"
@@ -43,9 +43,8 @@ const (
 
 //Much here taken from https://ericchiang.github.io/post/go-tls
 
-//Generate server and client certificates and dump them to files
-//the destinations should be folders, not full paths
-func GenRootCert(serverIPs []net.IP, clientDestination, serverDestination string) {
+//Generate server certificate and dump to file
+func GenRootCert(serverIPs []net.IP) *x509.Certificate {
 	common.PrintVerbose("Generating certificates...")
 	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -58,12 +57,48 @@ func GenRootCert(serverIPs []net.IP, clientDestination, serverDestination string
 	rootCertTmpl.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature
 	rootCertTmpl.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth}
 	rootCertTmpl.IPAddresses = serverIPs
-	_, rootCertPEM := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
+	rootCert, rootCertPEM := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
 
 	writeCertFile(rootCertPEM, rootCertFileName)
 	writeCertFile(privateKeyPEMify(rootKey), rootKeyFileName)
+	return rootCert
 }
 
+// Procedure:
+//  GenClientCert
+// Purpose:
+//  To generate client certificates and write
+//  their public keys where the server can find them
+// Parameters:
+//  The name of the client file (sans .crt): name string
+//  The signing parent certificate: parentCert *x509.Certificate
+//  The signing parent private key: parentKey *rsa.PrivateKey
+// Produces:
+//  Filesystem side effects
+//  The client private key pem encoded: PEMPrivKey []byte
+//  The client cert pem encoded: PEMCert []byte
+// Preconditions:
+//  A root key has been generated in the file system
+//  common.SettingsDir() is set and won't panic
+//  $name is valid on the filesystem
+//  $name is not "root"
+// Postconditions:
+//  PEMPrivKey and PEMCert are a valid cert/key pair
+//  PEMCert is signed by parentCert and parentKey
+//  $settingsDir/cert/$name.crt contains the private certificate
+func GenClientCert(name string, parentCert *x509.Certificate, parentKey *rsa.PrivateKey) (PEMPrivKey, PEMCert []byte) {
+	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		common.PrintError("Key gen err:", err)
+	}
+	clientTmpl := certTemplate()
+	clientTmpl.KeyUsage = x509.KeyUsageDigitalSignature
+	clientTmpl.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
+	_, PEMCert = createCert(clientTmpl, parentCert, privKey, parentKey)
+	PEMPrivKey = privateKeyPEMify(privKey)
+	writeCertFile(PEMCert, name + ".crt")
+	return
+}
 
 func createCert(template, parent *x509.Certificate, pub, parentPriv interface{}) (*x509.Certificate, []byte) {
 	certDER, err := x509.CreateCertificate(rand.Reader, template, parent, pub, parentPriv)
@@ -98,7 +133,7 @@ func privateKeyPEMify(privateKey *rsa.PrivateKey) []byte {
 //	The data to be written to the file: data []byte
 //  The file name to write to: fileName
 // Produces:
-//	Side effects
+//	File system side effects
 // Preconditions:
 //  fileName is a valid filename on the system
 //  fileName doesn't contain path seperator characters
