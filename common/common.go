@@ -98,6 +98,7 @@ const (
 var (
 	forceSuperuser bool
 	superuserForced bool
+	AlwaysPanic bool
 )
 
 
@@ -110,7 +111,9 @@ func ForceSuperuser(value bool) {
 }
 
 func PrintError(in ...interface{}) {
-	if IsSuperUser() {
+	if AlwaysPanic {
+		panic(fmt.Sprint(in...))
+	} else if IsSuperUser() {
 		log.Fatal(in...)
 	} else {
 		fmt.Println(in...)

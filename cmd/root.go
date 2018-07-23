@@ -62,6 +62,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&settingsDirProxy, "settings-dir", "", settingsHelpString)
 	rootCmd.PersistentFlags().BoolVar(&forceSuperuser, "force-su", false, "Force transcodebot to use superuser defaults")
 	rootCmd.PersistentFlags().BoolVar(&forceNoSuperuser, "force-no-su", false, "Force transcodebot to use normal user defaults")
+	rootCmd.PersistentFlags().BoolVar(&common.AlwaysPanic, "always-panic", false, "Always panic instead of normal error messages")
+	rootCmd.PersistentFlags().MarkHidden("always-panic")
 }
 
 func forceSuperuserInit() {
