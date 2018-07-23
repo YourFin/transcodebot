@@ -58,7 +58,7 @@ const build_extention = "clients"
 
 //Builds client binaries according to the passed in settings
 func Build(settings BuildSettings) error {
-	buildDir := filepath.Join(common.SettingsDir(), build_extention)
+	buildDir := common.SettingsDir(build_extention)
 
 	if settings.ForceNewCert { //or no cert exists
 		cert.GenRootCert(settings.ServerIPs)

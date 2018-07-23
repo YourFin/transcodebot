@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"errors"
 	"crypto/x509"
-	"path/filepath"
 	"crypto/rsa"
 
 	"github.com/yourfin/transcodebot/common"
@@ -46,7 +45,7 @@ import (
 //  Errors are handled
 //  key is the private key PEM encoded in $SettingsDir()/cert/$name.keyfile
 func ReadRsaKey(name string) *rsa.PrivateKey {
-	path := filepath.Join(common.SettingsDir(), "cert", name + ".keyfile")
+	path := common.SettingsDir("cert", name + ".keyfile")
 	data, err := DecodePEMFile(path)
 	if err != nil {
 		common.PrintError("Read private key err: ", err)
@@ -73,7 +72,7 @@ func ReadRsaKey(name string) *rsa.PrivateKey {
 //  Any errors are handled
 //  cert is the certificate PEM encoded in $SettingsDir()/cert/$name.crt
 func ReadCert(name string) *x509.Certificate {
-	path := filepath.Join(common.SettingsDir(), "cert", name + ".crt")
+	path := common.SettingsDir("cert", name + ".crt")
 	data, err := DecodePEMFile(path)
 	if err != nil {
 		common.PrintError("Read certificate err: ", err)
@@ -82,7 +81,7 @@ func ReadCert(name string) *x509.Certificate {
 	if err != nil {
 		common.PrintError("Invalid certificatee data err: ", err)
 	}
-	return cert
+return cert
 }
 
 // Procedure:

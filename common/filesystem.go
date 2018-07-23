@@ -50,17 +50,31 @@ func SetSettingsDir(settingsDirIn string) {
 	}
 }
 
-//Safely get the settings directory
-func SettingsDir() string {
+// Procedure:
+//  SettingsDir
+// Purpose:
+//  To safely return an absolute path under SettingsDir()
+// Parameters:
+//  Additional path elements: relPath ...string
+// Produces:
+//  output string
+// Preconditions:
+//  SetSettingsDir has been called
+// Postconditions:
+//  output = $settingsDir/$relPath/$relPath/$relPath...
+func SettingsDir(relPath ...string) string {
 	if ! settingsDirSet {
 		panic("Attempted to get settings dir when not set")
+	} else if relPath == nil {
+		return settingsDir
+	} else {
+		return settingsDir + string(filepath.Separator) + filepath.Join(relPath...)
 	}
-	return settingsDir
 }
 
 //Safely write data bytes to a file inside the settings directory.
 func SettingsWriteFile(data []byte, relPath ...string) error {
-	fullPath := SettingsDir() + string(filepath.Separator) + filepath.Join(relPath...)
+	fullPath := SettingsDir(relPath...)
 	parentDir := filepath.Dir(fullPath)
 	err := CowardlyCreateDir(parentDir)
 	if err != nil {
