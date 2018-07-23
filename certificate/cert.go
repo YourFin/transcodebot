@@ -44,7 +44,7 @@ const (
 //Much here taken from https://ericchiang.github.io/post/go-tls
 
 //Generate server certificate and dump to file
-func GenRootCert(serverIPs []net.IP) *x509.Certificate {
+func GenRootCert(serverIPs []net.IP) {
 	common.PrintVerbose("Generating certificates...")
 	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -57,11 +57,10 @@ func GenRootCert(serverIPs []net.IP) *x509.Certificate {
 	rootCertTmpl.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature
 	rootCertTmpl.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth}
 	rootCertTmpl.IPAddresses = serverIPs
-	rootCert, rootCertPEM := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
+	_, rootCertPEM := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
 
 	writeCertFile(rootCertPEM, rootCertFileName)
 	writeCertFile(privateKeyPEMify(rootKey), rootKeyFileName)
-	return rootCert
 }
 
 // Procedure:
@@ -123,27 +122,6 @@ func privateKeyPEMify(privateKey *rsa.PrivateKey) []byte {
 		Type: "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
-}
-
-// Procedure:
-//	writeCertFile
-// Purpose:
-//	Helper for writing out cert files in $SettingsDir/cert/
-// Parameters:
-//	The data to be written to the file: data []byte
-//  The file name to write to: fileName
-// Produces:
-//	File system side effects
-// Preconditions:
-//  fileName is a valid filename on the system
-//  fileName doesn't contain path seperator characters
-// Postconditions:
-//  $SettingsDir/cert/$fileName contains $data, or an error is printed
-func writeCertFile(data []byte, fileName string) {
-	err := common.SettingsWriteFile(data, "cert", fileName)
-	if err != nil {
-		common.PrintError("Writing Cert file err:", err)
-	}
 }
 
 func certTemplate() *x509.Certificate {

@@ -26,7 +26,7 @@ import (
 	"path/filepath"
 	"fmt"
 	"net"
-	"crypto/x509"
+	//"crypto/x509"
 
 	cert "github.com/yourfin/transcodebot/certificate"
 	"github.com/yourfin/transcodebot/common"
@@ -60,12 +60,12 @@ const build_extention = "clients"
 func Build(settings BuildSettings) error {
 	buildDir := filepath.Join(common.SettingsDir(), build_extention)
 
-	var rootCert *x509.Certificate
 	if settings.ForceNewCert { //or no cert exists
-		rootCert = cert.GenRootCert(settings.ServerIPs)
-	} else {
-		//rootCert =
+		cert.GenRootCert(settings.ServerIPs)
 	}
+	rootKey := cert.ReadRsaKey("root")
+	rootCert := cert.ReadCert("root")
+	common.Println(rootKey, rootCert)
 
 	//get the dir we were called from so we can come back
 	calledPath, err := os.Getwd()
