@@ -46,7 +46,7 @@ import (
 //  Errors are handled
 //  key is the private key PEM encoded in $SettingsDir()/cert/$name.keyfile
 func ReadRsaKey(name string) *rsa.PrivateKey {
-	path := filepath.Join(common.SettingsDir(), "cert", name + ".crt")
+	path := filepath.Join(common.SettingsDir(), "cert", name + ".keyfile")
 	data, err := DecodePEMFile(path)
 	if err != nil {
 		common.PrintError("Read private key err:", err)

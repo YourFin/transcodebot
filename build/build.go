@@ -63,8 +63,8 @@ func Build(settings BuildSettings) error {
 	if settings.ForceNewCert { //or no cert exists
 		cert.GenRootCert(settings.ServerIPs)
 	}
-	rootKey := cert.ReadRsaKey("root")
 	rootCert := cert.ReadCert("root")
+	rootKey := cert.ReadRsaKey("root")
 	common.Println(rootKey, rootCert)
 
 	//get the dir we were called from so we can come back
