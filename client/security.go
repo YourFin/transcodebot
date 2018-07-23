@@ -22,7 +22,7 @@ package main
 
 import (
 	"crypto/x509"
-	"github.com/yourfin/common"
+	"github.com/yourfin/transcodebot/common"
 )
 
 //Set at compile time
