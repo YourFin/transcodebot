@@ -49,11 +49,11 @@ func ReadRsaKey(name string) *rsa.PrivateKey {
 	path := filepath.Join(common.SettingsDir(), "cert", name + ".keyfile")
 	data, err := DecodePEMFile(path)
 	if err != nil {
-		common.PrintError("Read private key err:", err)
+		common.PrintError("Read private key err: ", err)
 	}
 	privateKey, err := x509.ParsePKCS1PrivateKey(data)
 	if err != nil {
-		common.PrintError("Private key data err:", err)
+		common.PrintError("Private key data err: ", err)
 	}
 	return privateKey
 }
@@ -76,11 +76,11 @@ func ReadCert(name string) *x509.Certificate {
 	path := filepath.Join(common.SettingsDir(), "cert", name + ".crt")
 	data, err := DecodePEMFile(path)
 	if err != nil {
-		common.PrintError("Read certificate err:", err)
+		common.PrintError("Read certificate err: ", err)
 	}
 	cert, err := x509.ParseCertificate(data)
 	if err != nil {
-		common.PrintError("Invalid certificatee data err:", err)
+		common.PrintError("Invalid certificatee data err: ", err)
 	}
 	return cert
 }
@@ -130,6 +130,6 @@ func DecodePEMFile(path string) ([]byte, error) {
 func writeCertFile(data []byte, fileName string) {
 	err := common.SettingsWriteFile(data, "cert", fileName)
 	if err != nil {
-		common.PrintError("Writing Cert file err:", err)
+		common.PrintError("Writing Cert file err: ", err)
 	}
 }

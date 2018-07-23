@@ -49,7 +49,7 @@ func rootHandler(ww http.ResponseWriter, rr *http.Request) {
 func echo(ww http.ResponseWriter, rr *http.Request) {
 	conn, err := upgrader.Upgrade(ww, rr, nil)
 	if err != nil {
-		log.Println("upgrade err:", err)
+		log.Println("upgrade err: ", err)
 		return
 	}
 	fmt.Printf("Connected to: %s", rr)
@@ -64,7 +64,7 @@ func echo(ww http.ResponseWriter, rr *http.Request) {
 		log.Printf("recv mt: %s\n", mt)
 		err = conn.WriteMessage(mt, message)
 		if err != nil {
-			log.Println("write err:", err)
+			log.Println("write err: ", err)
 		}
 	}
 }

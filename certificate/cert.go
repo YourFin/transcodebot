@@ -48,7 +48,7 @@ func GenRootCert(serverIPs []net.IP) {
 	common.PrintVerbose("Generating certificates...")
 	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		common.PrintError("certificate key err:", err)
+		common.PrintError("certificate key err: ", err)
 	}
 
 	rootCertTmpl := certTemplate()
@@ -88,7 +88,7 @@ func GenRootCert(serverIPs []net.IP) {
 func GenClientCert(name string, parentCert *x509.Certificate, parentKey *rsa.PrivateKey) (PEMPrivKey, PEMCert []byte) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		common.PrintError("Key gen err:", err)
+		common.PrintError("Key gen err: ", err)
 	}
 	clientTmpl := certTemplate()
 	clientTmpl.KeyUsage = x509.KeyUsageDigitalSignature
@@ -102,13 +102,13 @@ func GenClientCert(name string, parentCert *x509.Certificate, parentKey *rsa.Pri
 func createCert(template, parent *x509.Certificate, pub, parentPriv interface{}) (*x509.Certificate, []byte) {
 	certDER, err := x509.CreateCertificate(rand.Reader, template, parent, pub, parentPriv)
 	if err != nil {
-		common.PrintError("root cert gen err:", err)
+		common.PrintError("root cert gen err: ", err)
 	}
 
 	//Parse resulting cert for re-use later
 	cert, err := x509.ParseCertificate(certDER)
 	if err != nil {
-		common.PrintError("Parse Certificate err:", err)
+		common.PrintError("Parse Certificate err: ", err)
 	}
 
 	//PEM encode the certificate (adds the --BEGIN CERT stuff)
@@ -129,7 +129,7 @@ func certTemplate() *x509.Certificate {
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 
 	if err != nil {
-		common.PrintError("certificate secure random err:", err)
+		common.PrintError("certificate secure random err: ", err)
 	}
 
 	hostname, err := os.Hostname()

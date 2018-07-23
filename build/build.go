@@ -70,11 +70,11 @@ func Build(settings BuildSettings) error {
 	//get the dir we were called from so we can come back
 	calledPath, err := os.Getwd()
 	if err != nil {
-		common.PrintError("getting working directory err:", err)
+		common.PrintError("getting working directory err: ", err)
 	}
 	calledPath, err = filepath.Abs(calledPath)
 	if err != nil {
-		common.PrintError("absolute path err:", err)
+		common.PrintError("absolute path err: ", err)
 	}
 
 	//go back to the original working directory after the build
@@ -93,7 +93,7 @@ func Build(settings BuildSettings) error {
 		"transcodebot",
 		"client"))
 	if err != nil {
-		common.PrintError("Moving to build dir err:", err, "\nAre you sure your GOPATH environment variable is set?")
+		common.PrintError("Moving to build dir err: ", err, "\nAre you sure your GOPATH environment variable is set?")
 	}
 
 	common.CowardlyCreateDir(buildDir)

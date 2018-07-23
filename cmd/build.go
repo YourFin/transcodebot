@@ -42,7 +42,7 @@ var buildCmd = &cobra.Command{
 		buildSettings = finalizeBuildSettings(buildSettings)
 
 		if err = build.Build(buildSettings); err != nil {
-			common.PrintError("build err:", err)
+			common.PrintError("build err: ", err)
 		}
 	},
 }

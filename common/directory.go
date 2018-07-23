@@ -46,7 +46,7 @@ func SetSettingsDir(settingsDirIn string) {
 	var err error
 	settingsDir, err = filepath.Abs(settingsDirIn)
 	if err != nil {
-		PrintError("Set settings dir err:", err)
+		PrintError("Set settings dir err: ", err)
 	}
 }
 
@@ -160,7 +160,7 @@ func findExistingParentDir(dirname string) (existing string, nonexistent string,
 			return
 		} else {
 			Println("fileinfo:", fileinfo)
-			Println("err:", err)
+			Println("err: ", err)
 			Println("dirname:", dirname)
 			panic("Reached a place that was thought to be unreachable. Contact the maintainer of transcodebot with the above three lines")
 		}
