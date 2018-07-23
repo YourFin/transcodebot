@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"fmt"
 	"net"
+	"time"
 	//"crypto/x509"
 
 	cert "github.com/yourfin/transcodebot/certificate"
@@ -65,7 +66,6 @@ func Build(settings BuildSettings) error {
 	}
 	rootCert := cert.ReadCert("root")
 	rootKey := cert.ReadRsaKey("root")
-	common.Println(rootKey, rootCert)
 
 	//get the dir we were called from so we can come back
 	calledPath, err := os.Getwd()
@@ -102,6 +102,9 @@ func Build(settings BuildSettings) error {
 	common.Println("Building...")
 	doneChan := make(chan int)
 	for ii, target := range settings.Targets {
+		//Generate new client certificate
+		privKey, cert := cert.GenClientCert(target.ToString() + time.Now().String(), rootCert, rootKey)
+
 		builtName := filepath.Join(buildDir, settings.OutputPrefix + target.ToString())
 		if target.OS == common.Windows {
 			builtName = builtName + ".exe"
