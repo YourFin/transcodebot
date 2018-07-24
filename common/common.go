@@ -110,6 +110,26 @@ func ForceSuperuser(value bool) {
 	superuserForced = true
 }
 
+// Procedure:
+//  MaybePanic
+// Purpose:
+//  To panic if
+// Parameters:
+//  the error: err
+// Produces:
+//  Side effects:
+//    panic
+//  Or nothing
+// Preconditions:
+//  No additional
+// Postconditions:
+//  panic if AlwaysPanic
+func MaybePanic(err error) {
+	if AlwaysPanic {
+		panic(err)
+	}
+}
+
 func PrintError(in ...interface{}) {
 	if AlwaysPanic {
 		panic(fmt.Sprint(in...))
