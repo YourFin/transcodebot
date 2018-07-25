@@ -21,9 +21,11 @@
 package cmd
 
 import (
+	"github.com/yourfin/transcodebot/build"
 
 	"github.com/spf13/cobra"
 	"github.com/yourfin/transcodebot/server/transcode"
+	"github.com/yourfin/transcodebot/common"
 )
 
 // watchCmd represents the watch command
@@ -37,7 +39,14 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		transcode.Watch(watchSettings, *transcodeServerSettings, args)
+		start, size, err := build.AppendFile(args[0], args[1])
+		if err != nil {
+			common.PrintError("write err:", err)
+		}
+		common.Println(start, size)
+		err = build.ReadStuff(start, size, args[1])
+		common.PrintError(err)
+		//transcode.Watch(watchSettings, *transcodeServerSettings, args)
 	},
 }
 var watchSettings transcode.WatchSettings
