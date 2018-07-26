@@ -21,7 +21,9 @@
 package cmd
 
 import (
-	"github.com/yourfin/transcodebot/build"
+	//"github.com/yourfin/transcodebot/build"
+	"os"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/yourfin/transcodebot/server/transcode"
@@ -39,14 +41,50 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		start, size, err := build.AppendFile(args[0], args[1])
+		//appender, err := build.MakeAppender(args[0])
+		//if err != nil {
+		//	common.PrintError("MakeAppender err: ", err)
+		//}
+		//err = appender.AppendFile(args[1])
+		//if err != nil {
+		//	common.PrintError("append file err: ", err)
+		//}
+		//err = appender.Close()
+		//if err != nil {
+		//	common.PrintError("close appender err: ", err)
+		//}
+		handle1, err := os.Open(args[0])
 		if err != nil {
-			common.PrintError("write err:", err)
+			common.PrintError("handle 1 open err:", err)
 		}
-		common.Println(start, size)
-		err = build.ReadStuff(start, size, args[1])
-		common.PrintError(err)
-		//transcode.Watch(watchSettings, *transcodeServerSettings, args)
+		handle2, err := os.Open(args[0])
+		if err != nil {
+			common.PrintError("handle 2 open err:", err)
+		}
+		handle1.Seek(1, 0)
+		bytes1 := make([]byte, 6)
+		bytes2 := make([]byte, 6)
+		_, err = handle2.Read(bytes2)
+		if err != nil {
+			common.PrintError("handle 2 read err:", err)
+		}
+		_, err = handle1.Read(bytes1)
+		if err != nil {
+			common.PrintError("handle 1 read err:", err)
+		}
+
+
+		err = handle1.Close()
+		if err != nil {
+			common.PrintError("handle 1 close err:", err)
+		}
+		err = handle2.Close()
+		if err != nil {
+			common.PrintError("handle 2 close err:", err)
+		}
+
+		fmt.Println(string(bytes1))
+		fmt.Println(string(bytes2))
 	},
 }
 var watchSettings transcode.WatchSettings
