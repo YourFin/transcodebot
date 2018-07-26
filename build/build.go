@@ -27,7 +27,10 @@ import (
 	"fmt"
 	"net"
 	"time"
-	//"crypto/x509"
+	"encoding/base64"
+	"crypto/x509"
+	"crypto/rsa"
+	"io/ioutil"
 
 	cert "github.com/yourfin/transcodebot/certificate"
 	"github.com/yourfin/transcodebot/common"
@@ -65,6 +68,7 @@ func Build(settings BuildSettings) error {
 		cert.GenRootCert(settings.ServerIPs)
 	}
 	rootCert := cert.ReadCert("root")
+	rootCertPEM, _ := ioutil.ReadFile(buildDir + string(os.PathSeparator) + "root.crt")
 	rootKey := cert.ReadRsaKey("root")
 
 	//get the dir we were called from so we can come back
@@ -103,13 +107,13 @@ func Build(settings BuildSettings) error {
 	doneChan := make(chan int)
 	for ii, target := range settings.Targets {
 		//Generate new client certificate
-		privKey, cert := cert.GenClientCert(target.ToString() + time.Now().String(), rootCert, rootKey)
+		ldflagsString := handleBuildCerts(rootKey, rootCert, rootCertPEM, target)
 
 		builtName := filepath.Join(buildDir, settings.OutputPrefix + target.ToString())
 		if target.OS == common.Windows {
 			builtName = builtName + ".exe"
 		}
-		command := exec.Command("go", "build", "-a", "-o", builtName)
+		command := exec.Command("go", "build", "-a", "-ldflags", ldflagsString, "-o", builtName)
 		//Duplicate entries are removed automatically on execution
 		command.Env = append(
 			os.Environ(),
@@ -117,6 +121,7 @@ func Build(settings BuildSettings) error {
 			"GOARCH=" + target.Arch.ToString(),
 			"GOOS=" + target.OS.ToString(),
 		)
+		common.Println(ldflagsString)
 		//Note that range variables are shared between
 		//loops but others are not, hence the passing by
 		//value
@@ -137,4 +142,37 @@ func Build(settings BuildSettings) error {
 	}
 	common.PrintVerbose("All complies finished. Binaries at:", buildDir)
 	return nil
+}
+
+// Procedure:
+//  handleBuildCerts
+// Purpose:
+//  To handle certificate generation for each client
+// Parameters:
+//  The root private key: rootKey *rsa.PrivateKey
+//  The root certificate: rootCert *x509.Certificate
+//  The PEM encoded root certificate: rootCertPEM []byte
+//  The build target: target common.SystemType
+// Produces:
+//  File system side effects
+//  The string to be added to ldflags on the build, ldflagsString string
+// Preconditions:
+//  rootCert and rootKey are a valid certificate key pair
+//  rootCert can sign certificates
+// Postconditions:
+//  A unique file is generated in the certs dir
+func handleBuildCerts(rootKey *rsa.PrivateKey, rootCert *x509.Certificate, rootCertPEM []byte, target common.SystemType) string {
+	b64encode := base64.StdEncoding.EncodeToString
+
+	certName := target.ToString() + "-" + time.Now().String()
+	PEMClientPrivateKey, PEMClientCert := cert.GenClientCert(certName, rootCert, rootKey)
+
+	b64clientPrivateKey := b64encode(PEMClientPrivateKey)
+	b64clientCert := b64encode(PEMClientCert)
+	b64serverCert := b64encode(rootCertPEM)
+
+	ldflagsString := "-X b64clientPrivateKey=" + b64clientPrivateKey
+	ldflagsString += " -X b64clientCert=" + b64clientCert
+	ldflagsString += " -X b64serverCert=" + b64serverCert
+	return ldflagsString
 }

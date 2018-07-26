@@ -39,14 +39,18 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		start, size, err := build.AppendFile(args[0], args[1])
+		appender, err := build.MakeAppender(args[0])
 		if err != nil {
-			common.PrintError("write err:", err)
+			common.PrintError("MakeAppender err: ", err)
 		}
-		common.Println(start, size)
-		err = build.ReadStuff(start, size, args[1])
-		common.PrintError(err)
-		//transcode.Watch(watchSettings, *transcodeServerSettings, args)
+		err = appender.AppendFile(args[1])
+		if err != nil {
+			common.PrintError("append file err: ", err)
+		}
+		err = appender.Close()
+		if err != nil {
+			common.PrintError("close appender err: ", err)
+		}
 	},
 }
 var watchSettings transcode.WatchSettings

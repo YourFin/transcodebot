@@ -24,163 +24,195 @@ import (
 	"os"
 	"io"
 	"compress/gzip"
-	"sync/atomic"
 	"sync"
-
-	"github.com/yourfin/transcodebot/common"
+	"errors"
+	"fmt"
+	"encoding/json"
+	"encoding/binary"
 )
 
-type appendedFile struct {
+type appendedData struct {
 	//TODO: Copy to temp file before opening a reader
 	//TODO: CopyToTmp bool
-	Compressed bool
-	StartFilePtr int64
-	ZippedSize int64
+	StartFilePtr int64 `json:"start_file_pointer"`
+	ZippedSize   int64 `json:"zipped_block_size"`
 }
 
 const METADATA_VERSION string = "0.1"
 type appendedMetadata struct {
 	Version string
-	Files map[string]appendedFile
+	Data    map[string]appendedData
 }
 
 type BinAppender struct {
 	fileHandle *os.File
-	writer io.Writer
-	metadata appendedMetadata
-	writeLock *sync.Mutex
+	metadata   appendedMetadata
+	mux        *sync.Mutex
 }
 
-func MakeCustomAppender(filename string, writeWrapper func(io.Writer) io.Writer) (*BinAppender, error){
+// Procedure:
+//  MakeAppender
+// Purpose:
+//  To create a BinAppender
+// Parameters:
+//  The name of the file to append to: filename string
+//  A function that wraps an io.Writer: writeWrapper
+//    This can be used to pre-process data before insertion
+//    Note: this function will be called every time a file/stream is added
+// Produces:
+//  A pointer to a new BinAppender: output *BinAppender
+//  Any filesystem errors that occur in opening $filename: err error
+// Preconditions:
+//  The file at filename exists and can be written to
+// Postconditions:
+//  An appender is created that will append to filename through writeWrapper
+//  The caller of this function closes the created BinAppender
+func MakeAppender(filename string) (*BinAppender, error) {
 	var err error
 	output := BinAppender{}
 	output.fileHandle, err = os.OpenFile(filename, os.O_RDWR, 0755)
 	if err != nil {
 		return nil, err
 	}
-	output.writer = writeWrapper(output.fileHandle)
-	output.writeLock = &sync.Mutex{}
+	output.mux = &sync.Mutex{}
 	output.metadata = appendedMetadata{}
-	output.metadata.Files = make(map[string]appendedFile)
+	output.metadata.Data = make(map[string]appendedData)
 	output.metadata.Version = METADATA_VERSION
 	return &output, nil
 }
 
-func MakeGzAppender(filename string) (*BinAppender, error) {
-	return MakeCustomAppender(
-		filename,
-		func(input io.Writer) io.Writer {
-			return input
-		},
-	)
-}
-
-//func (bb BinAppender) ()
-
 // Procedure:
-//  appendFile
+//  BinAppender.AppendStreamReader
 // Purpose:
-//  To gzip and pack a file onto the end of another file and return
-//  the append files byte location
+//  To append the entirety of a stream in an appended file block
 // Parameters:
-//  The file to append: toAppend string
-//  The file to be appended to: appendee string
+//  The parent *BinAppender: appender
+//  The unique name of the stream: name string
+//  The reader to pull data out of: source io.Reader
 // Produces:
-//  The "index" of the first byte of the appended file: startByte int
-//  The number of bytes in the appended file: size int
-//  Any errors that occur: err error
-//  Side effects:
-//    The file at $appendee will have the binary data of $toAppend at the end of it
+//  Side effects
+//  Any errors in writing to the filesystem: err error
 // Preconditions:
-//  toAppend and apendee exist and are readable in the file system
-//  apendee is writeable on the filesystem
+//  reader has a finite amount of data to read
+//  $appender.Close() has not been called
 // Postconditions:
+//  All of the data that reader can read has been written to
+//    appender's internal writer at the end of its file
+//  appender's internal metadata has been updated to reflect the addition
+//  Errors will be filesystem related
+//
 //  bash equivalent is executed:
-//    cat $toAppend | gzip >> $apendee
+//    $source | gzip >> $appender.file
 //
-//  $apendee.toByteArray()[$startByte:$size].gunzip() == $toAppend.toByteArray()
-//
-func AppendFile(toAppend, appendee string) (startByte, size int64, err error) {
-	appendeeFile, err := os.OpenFile(appendee, os.O_RDWR, 0755)
-	if err != nil {
-		return 0, 0, err
-	}
-	toAppendFile, err := os.Open(toAppend)
-	if err != nil {
-		return 0, 0, err
-	}
-	defer toAppendFile.Close()
+//  $appender.file.ByteArray()[$appender.metadata[$name].StartFilePtr:$appender.metadata[$name].ZippedSize].gunzip() == $source.ByteArray[]
+func (appender *BinAppender) AppendStreamReader(name string, source io.Reader) error {
+	appender.mux.Lock()
+	defer appender.mux.Unlock()
 
-	startByte, err = appendeeFile.Seek(0, io.SeekEnd)
+	startPtr, err := appender.fileHandle.Seek(0, io.SeekEnd)
 	if err != nil {
-		return 0, 0, err
+		return err
 	}
-
-	gzWriter := gzip.NewWriter(appendeeFile)
-
-	num, err := io.Copy(gzWriter, toAppendFile)
+	gzWriter := gzip.NewWriter(appender.fileHandle)
+	_, err = io.Copy(gzWriter, source)
 	if err != nil {
-		return 0, 0, err
+		return err
 	}
 	gzWriter.Close()
-	common.Println(num)
 
-	end, err := appendeeFile.Seek(0, io.SeekEnd)
+	endPtr, err := appender.fileHandle.Seek(0, io.SeekEnd)
 	if err != nil {
-		return 0, 0, err
-	}
-	common.Println("end: ", end)
-
-	err = appendeeFile.Close()
-	if err != nil {
-		return 0, 0, err
+		return err
 	}
 
-	size = end - startByte
+	fileMetadata := appendedData{}
+	fileMetadata.StartFilePtr = startPtr
+	fileMetadata.ZippedSize = endPtr - startPtr
 
-	return startByte, size, nil
+	appender.metadata.Data[name] = fileMetadata
+	return nil
 }
 
-func ReadStuff(start, size int64, path string) error {
-	readFile, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	_, err = readFile.Seek(start, io.SeekStart)
-	if err != nil {
-		return err
-	}
-
-	gzReader, err := gzip.NewReader(io.LimitReader(readFile, size))
-
-	if err != nil {
-		return err
-	}
-
-	num, err := io.Copy(os.Stdout, gzReader)
-	common.Println()
-	common.Println(num)
-	return err
-}
-
-// Type:
-//  writeCounter
+// Procedure:
+//  BinAppender.AppendFile
 // Purpose:
-//  To count the number of bytes written to an io.writer
-//
-//  As it turns out, gzip.Writer().Write() returns the
-//  number of bytes in, not out. This shim goes between
-//  gzip and the filesystem so we can figure out how many
-//  bytes were actually written out to pasture
-type writeCounter struct {
-	Counter int64
-	child io.Writer
+//  To gzip and pack a file onto the end of the BinAppender's file
+// Parameters:
+//  The calling BinAppender: appender BinAppender
+//  The file to append: source string
+// Produces:
+//  Side effects:
+//    filesystem
+//    internal state changes
+//  Any errors in writing to the filesystem: err error
+// Preconditions:
+//  $source exists and is readable in the file system
+//  $source has not been appended already nor has $appender.AppendStreamReader(name, _)
+//    been called with name == $source
+//  $appender.Close() has not been called
+// Postconditions:
+//  A reader stream from $source will be passed to $appender.AppendStreamReader,
+//    with the name parameter as source
+func (appender *BinAppender) AppendFile(source string) error {
+	sourceHandle, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+
+	appender.mux.Lock()
+	if _, exists := appender.metadata.Data[source]; exists {
+		appender.mux.Unlock()
+		return errors.New(fmt.Sprintf("file %s has already been added to appender", source))
+	}
+	appender.mux.Unlock()
+
+	err = appender.AppendStreamReader(source, sourceHandle)
+	if err != nil {
+		return err
+	}
+	return sourceHandle.Close()
 }
-func (w *writeCounter) Write(p []byte) (n int, err error) {
-	n, err = w.child.Write(p)
-	atomic.AddInt64(&w.Counter, int64(n))
-	return
-}
-func newWriteCounter(child io.Writer) (*writeCounter) {
-	return &writeCounter{0, child}
+
+// Procedure:
+//  BinAppender.Close()
+// Purpose:
+//  To finish writing to the file being appended to
+//    and free it for use elsewhere
+// Parameters:
+//   The BinAppender being acted upon: appender
+// Produces:
+//   Any filesystem errors: err error
+// Preconditions:
+//  $appender.Close() has not been called
+// Postconditions:
+//  The json-encoded metadata about the appended files has been
+//    written out to the end of file being appended to
+//  The start of said json block is encoded in the final 8 bytes of
+//    the file being appended to as a little endian int64
+//  The internal file handle for the file being appended to has been closed
+func (appender *BinAppender) Close() error {
+	appender.mux.Lock()
+	defer appender.mux.Unlock()
+
+	jsonPtr, err := appender.fileHandle.Seek(0, io.SeekEnd)
+	if err != nil {
+		return err
+	}
+	jsonPtrBytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(jsonPtrBytes, uint64(jsonPtr))
+
+	jsonBytes, err := json.Marshal(appender.metadata)
+	//Should not happen
+	if err != nil {
+		return err
+	}
+	_, err = appender.fileHandle.Write(jsonBytes)
+	if err != nil {
+		return err
+	}
+	_, err = appender.fileHandle.Write(jsonPtrBytes)
+	if err != nil {
+		return err
+	}
+	return appender.fileHandle.Close()
 }
