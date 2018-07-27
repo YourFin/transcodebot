@@ -22,12 +22,36 @@ package main
 
 import (
 	"crypto/x509"
+	"crypto/rsa"
+	"encoding/base64"
+
 	"github.com/yourfin/transcodebot/common"
 )
 
 //Set at compile time
 var (
-	serverCertPEM []byte
-	clientKeyPEM []byte
-	clientCertPEM []byte
+	serverCert *x509.Certificate
+	clientKey *rsa.PrivateKey
+	clientCert *x509.Certificate
+	b64serverCert string
+	b64clientPrivateKey string
+	b64clientCert string
 )
+
+// Procedure:
+//  unmarshalStaticVars
+// Purpose:
+//  To transform the base64 encoded static variables into what they represent
+// Parameters:
+//  None
+// Produces:
+//  Side effects:
+//    serverCert, clientKey, and clientCert all set
+// Preconditions:
+//  This binary was built with the build flags as seen in:
+//    github.com/yourfin/transcodebot/build.handleBuildCerts
+// Postconditions:
+//  all mentioned variables are unmarshaled into the variables they represent
+func unmarshalStaticVars() {
+
+}

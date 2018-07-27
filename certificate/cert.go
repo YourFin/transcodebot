@@ -93,7 +93,7 @@ func GenClientCert(name string, parentCert *x509.Certificate, parentKey *rsa.Pri
 	clientTmpl := certTemplate()
 	clientTmpl.KeyUsage = x509.KeyUsageDigitalSignature
 	clientTmpl.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
-	_, PEMCert = createCert(clientTmpl, parentCert, privKey, parentKey)
+	_, PEMCert = createCert(clientTmpl, parentCert, &privKey.PublicKey, parentKey)
 	PEMPrivKey = privateKeyPEMify(privKey)
 	writeCertFile(PEMCert, name + ".crt")
 	return
