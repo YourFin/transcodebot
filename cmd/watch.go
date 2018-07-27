@@ -51,6 +51,17 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			common.PrintError("close appender err: ", err)
 		}
+
+		extractor, err := build.MakeAppendExtractor(args[0])
+		if err != nil {
+			common.PrintError("Appender gen err: ", err)
+		}
+		data, err := extractor.ByteArray(args[1])
+		if err != nil {
+			common.PrintError("extractor readbytes err: ")
+		}
+		common.Println(string(data))
+
 	},
 }
 var watchSettings transcode.WatchSettings
