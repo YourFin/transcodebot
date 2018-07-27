@@ -189,50 +189,6 @@ func (extractor *BinAppendExtractor) ByteArray(dataName string) ([]byte, error) 
 	return data, nil
 }
 
-func ReadStuff(start, size int64, path string) error {
-	readFile, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	_, err = readFile.Seek(start, io.SeekStart)
-	if err != nil {
-		return err
-	}
-
-	gzReader, err := gzip.NewReader(io.LimitReader(readFile, size))
-
-	if err != nil {
-		return err
-	}
-
-	num, err := io.Copy(os.Stdout, gzReader)
-	common.Println()
-	common.Println(num)
-	return err
-}
-
-// Type:
-//  writeCounter
-// Purpose:
-//  To count the number of bytes written to an io.writer
-//
-//  As it turns out, gzip.Writer().Write() returns the
-//  number of bytes in, not out. This shim goes between
-//  gzip and the filesystem so we can figure out how many
-//  bytes were actually written out to pasture
-type writeCounter struct {
-	Counter int64
-	child io.Writer
-}
-func (w *writeCounter) Write(p []byte) (n int, err error) {
-	n, err = w.child.Write(p)
-	atomic.AddInt64(&w.Counter, int64(n))
-	return
-}
-func newWriteCounter(child io.Writer) (*writeCounter) {
-	return &writeCounter{0, child}
-}
-
 // Type:
 //  BinAppendReader
 // Purpose:
@@ -242,7 +198,7 @@ func newWriteCounter(child io.Writer) (*writeCounter) {
 //  io.Reader
 //  io.Closer
 //  io.ReadCloser
-// PostConditions:
+// Postconditions:
 //  Must be closed so the underlying *os.File can be freed
 type BinAppendReader struct {
 	//The name of the data as inputed by the BinAppender
