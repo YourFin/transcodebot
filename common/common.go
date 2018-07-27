@@ -113,7 +113,8 @@ func ForceSuperuser(value bool) {
 // Procedure:
 //  MaybePanic
 // Purpose:
-//  To panic if
+//  To panic if an error appears
+//  Really exists to help with debugging
 // Parameters:
 //  the error: err
 // Produces:
