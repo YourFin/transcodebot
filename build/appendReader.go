@@ -66,14 +66,13 @@ func MakeAppendExtractor(filename string) (reader *BinAppendExtractor, err error
 		return nil, errors.Wrapf(err, "Open file \"%s\"", filename)
 	}
 
-	//Read in metadata pointer
+	//Read in metadata pointer magic number
 	_, err = fileHandle.Seek(-8, io.SeekEnd)
 	if err != nil {
 		_ = fileHandle.Close()
 		return nil, errors.Wrapf(err, "Seek in file \"%s\" to location %d before end", filename, 8)
 	}
 
-	//Read in pointer to metadata
 	metadataPtrBytes := make([]byte, 8)
 	count, err := fileHandle.Read(metadataPtrBytes)
 	if err != nil {
@@ -240,7 +239,7 @@ func (reader *BinAppendReader) Read(p []byte) (n int, err error) {
 // Preconditions:
 //  No additonal
 // Postconditions:
-//  All resources for the binAppendReader have been closed
+//  All resources for the BinAppendReader have been closed
 func (reader *BinAppendReader) Close() error {
 	return reader.fileHandle.Close()
 }
