@@ -21,24 +21,22 @@
 package certificate
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"math/big"
-	"crypto/rand"
 	"encoding/pem"
-	"time"
-	"os"
+	"math/big"
 	"net"
+	"os"
+	"time"
 
 	"github.com/yourfin/transcodebot/common"
 )
 
 const (
-	rootKeyFileName    string = "root.keyfile"
-	rootCertFileName   string = "root.crt"
-	clientKeyFileName  string = "client.keyfile"
-	clientCertFileName string = "client.crt"
+	rootKeyFileName  string = "root.keyfile"
+	rootCertFileName string = "root.crt"
 )
 
 //Much here taken from https://ericchiang.github.io/post/go-tls
@@ -85,6 +83,7 @@ func GenRootCert(serverIPs []net.IP) {
 //  PEMPrivKey and PEMCert are a valid cert/key pair
 //  PEMCert is signed by parentCert and parentKey
 //  $settingsDir/cert/$name.crt contains the private certificate
+//  $settingsDir/cert/$name.crt contains the private key file
 func GenClientCert(name string, parentCert *x509.Certificate, parentKey *rsa.PrivateKey) (PEMPrivKey, PEMCert []byte) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -95,7 +94,8 @@ func GenClientCert(name string, parentCert *x509.Certificate, parentKey *rsa.Pri
 	clientTmpl.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
 	_, PEMCert = createCert(clientTmpl, parentCert, &privKey.PublicKey, parentKey)
 	PEMPrivKey = privateKeyPEMify(privKey)
-	writeCertFile(PEMCert, name + ".crt")
+	writeCertFile(PEMCert, name+".crt")
+	writeCertFile(PEMPrivKey, name+".keyfile")
 	return
 }
 
@@ -119,7 +119,7 @@ func createCert(template, parent *x509.Certificate, pub, parentPriv interface{})
 //Turns private key into file storeable form
 func privateKeyPEMify(privateKey *rsa.PrivateKey) []byte {
 	return pem.EncodeToMemory(&pem.Block{
-		Type: "RSA PRIVATE KEY",
+		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
 }
@@ -135,15 +135,15 @@ func certTemplate() *x509.Certificate {
 	hostname, err := os.Hostname()
 
 	tmpl := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject: pkix.Name{Organization: []string{"transcodebot-" + hostname}},
+		SerialNumber:       serialNumber,
+		Subject:            pkix.Name{Organization: []string{"transcodebot-" + hostname}},
 		SignatureAlgorithm: x509.SHA256WithRSA,
-		NotBefore: time.Now(),
+		NotBefore:          time.Now(),
 		//*Supposedly* the tls protocol is implemented such that
 		//certs can't be valid past 2049
 		//see www-01.ibm.com/support/docview.wss?uid=swg21220045
 		//I'm not totally sure of this, however, as that is dated from 2012
-		NotAfter: time.Date(2049, time.December, 1, 1, 1, 1, 1, time.UTC),
+		NotAfter:              time.Date(2049, time.December, 1, 1, 1, 1, 1, time.UTC),
 		BasicConstraintsValid: true,
 	}
 	return &tmpl
